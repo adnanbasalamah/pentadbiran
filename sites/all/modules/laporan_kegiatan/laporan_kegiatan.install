@@ -1,0 +1,26 @@
+<?php
+/**
+ * @file
+ * Install file for laporan kegiatan module.
+ */
+/**
+ * Implements hook_install().
+ * - Add the body field.
+ */
+
+function laporan_kegiatan_install() {
+    drupal_set_message("Laporan Kegiatan Module successfully installed");
+}
+function laporan_kegiatan_uninstall() {
+    drupal_set_message("Laporan Kegiatan successfully removed");
+}
+function laporan_kegiatan_enable() {
+    drupal_set_message("Laporan Kegiatan Module successfully enabled");
+}
+function laporan_kegiatan_disable() {
+    drupal_set_message("Laporan Kegiatan Module successfully disabled");
+}
+function laporan_kegiatan_schema() {
+    require 'laporan_kegiatan.schema.inc';
+    return $schema;
+}

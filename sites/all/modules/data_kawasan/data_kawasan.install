@@ -1,0 +1,22 @@
+<?php
+/**
+ * @file
+ * Install file for data negeri module.
+ */
+/**
+ * Implements hook_install().
+ * - Add the body field.
+ */
+
+function data_kawasan_install() {
+    drupal_set_message("Data Kawasan Module successfully installed");
+}
+function data_kawasan_uninstall() {
+    drupal_set_message("Data Kawasan successfully removed");
+}
+function data_kawasan_enable() {
+    drupal_set_message("Data Kawasan Module successfully enabled");
+}
+function data_kawasan_disable() {
+    drupal_set_message("Data Kawasan Module successfully disabled");
+}

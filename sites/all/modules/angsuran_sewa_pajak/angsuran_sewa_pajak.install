@@ -1,0 +1,27 @@
+<?php
+/**
+ * @file
+ * Install file for laporan kegiatan module.
+ */
+/**
+ * Implements hook_install().
+ * - Add the body field.
+ */
+
+function angsuran_sewa_pajak_install() {
+    drupal_set_message("Angsuran Sewa Pajak Module successfully installed");
+}
+function angsuran_sewa_pajak_uninstall() {
+    db_drop_table('zuser_zone');
+    drupal_set_message("Angsuran Sewa Pajak successfully removed");
+}
+function angsuran_sewa_pajak_enable() {
+    drupal_set_message("Angsuran Sewa Pajak Module successfully enabled");
+}
+function angsuran_sewa_pajak_disable() {
+    drupal_set_message("Angsuran Sewa Pajak Module successfully disabled");
+}
+function angsuran_sewa_pajak_schema() {
+    require 'angsuran_sewa_pajak.schema.inc';
+    return $schema;
+}

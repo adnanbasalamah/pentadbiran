@@ -1,0 +1,103 @@
+<?php
+header('Access-Control-Allow-Origin: *');
+/**
+ * @return mixed
+ */
+function data_staff_menu() {
+    $items['masterdata/staff'] = array(
+        'title' => 'Data Staff',
+        'type' => MENU_NORMAL_ITEM,
+        'menu_name' => 'main-menu',
+        'access arguments' => array('access data staff'),
+        'page callback' => 'list_staff',
+        'weight' => 6,
+    );
+    $items['masterdata/staff/list'] = array(
+        'title' => 'List Data Staff',
+        'description' => 'List data staff.',
+        'page callback' => 'list_staff',
+        'access arguments' => array('access data staff'),
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'weight' => 0,
+    );
+    $items['masterdata/staff/add'] = array(
+        'title' => 'Form Data Staff',
+        'description' => 'Form data staff.',
+        'page callback' => 'input_data_staff',
+        'access arguments' => array('admin data staff'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 1,
+    );
+    $items['masterdata/staff/addanak'] = array(
+        'title' => t('Input Data Anak Staff'),
+        'description' => 'Input data anak staff',
+        'page callback' => 'add_anak_staff',
+        'access arguments' => array('admin data staff'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 2,
+    );
+    $items['masterdata/staff/dataanak'] = array(
+        'title' => t('Tabel Anak Staff'),
+        'description' => 'Tabel anak staff',
+        'page callback' => 'tabel_anak_staff',
+        'access arguments' => array('access data staff'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 3,
+    );
+    $items['masterdata/staff/tablemilad'] = array(
+        'title' => t('Tabel Milad Staff'),
+        'description' => 'Tabel milad staff bulan ini',
+        'page callback' => 'tabel_milad_staff',
+        'access arguments' => array('access data staff'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 4,
+    );
+    $items['masterdata/staff/delete'] = array(
+        'title' => t('Delete data staff'),
+        'description' => 'Delete data staff.',
+        'page callback' => 'delete_staff_data',
+        'access arguments' => array('admin data staff'),
+        'type' => MENU_CALLBACK,
+        'weight' => 0,
+    );
+    $items['masterdata/staff/updatestaff'] = array(
+        'title' => t('Update data staff'),
+        'description' => 'Update data staff.',
+        'page callback' => 'update_staff_data',
+        'access arguments' => array('admin data staff'),
+        'type' => MENU_CALLBACK,
+        'weight' => 0,
+    );
+    $items['masterdata/staff/getajax'] = array(
+        'title' => t('Get data staff ajax'),
+        'description' => 'Get data staff ajax',
+        'page callback' => 'get_data_staff_by_id',
+        'access arguments' => array('access data staff'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['masterdata/staff/getmiladajax'] = array(
+        'title' => t('Get data staff milad ajax'),
+        'description' => 'Get data staff milad ajax',
+        'page callback' => 'get_data_staff_milad_by_date_ajax',
+        'access arguments' => array('access data staff'),
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+/**
+ * @return array
+ */
+function data_staff_permission() {
+    return array(
+        'access data staff' => array(
+            'title' => t('access data staff'),
+            'description' => t('enable to get access for data staff.'),
+        ),
+        'admin data staff' => array(
+            'title' => t('admin data staff'),
+            'description' => t('enable to manage data staff.'),
+        ),
+    );
+}
+require_once 'data_staff.api.inc';
+require_once 'data_anak_staff.api.inc';

@@ -1,0 +1,118 @@
+<?php
+/**
+ * @file
+ * Install file for data overhead module.
+ */
+/**
+ * Implements hook_install().
+ * - Add the body field.
+ */
+
+function setoran_pengeluaran_install() {
+    drupal_set_message("Data Setoran & Pengeluaran Module successfully installed");
+    setoran_pengeluaran_update_7001();
+    setoran_pengeluaran_update_7002();
+    setoran_pengeluaran_update_7003();
+    setoran_pengeluaran_update_7004();
+}
+function setoran_pengeluaran_uninstall() {
+    drupal_set_message("Data Setoran & Pengeluaran successfully removed");
+    if (db_table_exists('zpremis_ketentuan')) {
+        db_drop_table('zpremis_ketentuan');
+    }
+}
+function setoran_pengeluaran_enable() {
+    drupal_set_message("Data Setoran & Pengeluaran Module successfully enabled");
+}
+function setoran_pengeluaran_disable() {
+    drupal_set_message("Data Setoran & Pengeluaran Module successfully disabled");
+}
+function setoran_pengeluaran_schema() {
+    require 'setoran_pengeluaran.schema.inc';
+    return $schema;
+}
+function setoran_pengeluaran_update_7001(){
+    $schema['zpremis_ketentuan'] = array(
+        'description' => 'Stores information about data ketentuan/overhead premis perbulan.',
+        'fields' => array(
+            'id_premis' => array(
+                'type' => 'varchar',
+                'length' => 30,
+                'not null' => TRUE,
+                'default' => 'id premis',
+                'description' => 'Related premis for overhead.',
+            ),
+            'id_overhead' => array(
+                'type' => 'varchar',
+                'length' => 30,
+                'not null' => TRUE,
+                'default' => 'id overhead',
+                'description' => 'Related overhead for premis.',
+            ),
+            'month' => array(
+                'type' => 'int',
+                'default' => 0,
+                'description' => 'Month for ketentuan/overhead.',
+            ),
+            'year' => array(
+                'type' => 'int',
+                'default' => 0,
+                'description' => 'Year for ketentuan/overhead.',
+            ),
+            'uid' => array(
+                'type' => 'int',
+                'default' => 0,
+                'description' => 'User ID that create the record.',
+            ),
+            'uid_changed' => array(
+                'type' => 'int',
+                'default' => 0,
+                'description' => 'User ID that changed the record.',
+            ),
+            'created' => array(
+                'type' => 'int',
+                'default' => 0,
+                'description' => 'The time that the row  was created, as a Unix timestamp.',
+            ),
+            'changed' => array(
+                'type' => 'int',
+                'default' => 0,
+                'description' => 'The time that the row  was updated, as a Unix timestamp.',
+            ),
+        ),
+        'primary key' => array(
+            'id_premis','id_overhead','month','year'
+        ),
+    );
+    if (!db_table_exists('zpremis_ketentuan')){
+        $return = db_create_table('zpremis_ketentuan', $schema['zpremis_ketentuan']);
+    }
+    return $return;
+}
+function setoran_pengeluaran_update_7002(){
+    $overhead_value = array(
+        'type' => 'float',
+        'size' => 'big',
+        'description' => 'Besar ketentuan/overhead.',
+    );
+    $return = db_add_field( 'zpremis_ketentuan', 'overhead_value', $overhead_value);
+    return $return;
+}
+function setoran_pengeluaran_update_7003(){
+    $idKetentuan = array(
+        'type' => 'varchar',
+        'length' => 30,
+        'not null' => TRUE,
+        'default' => 'random_number',
+        'description' => 'Ketentuan ID',
+    );
+    $return = db_add_field( 'zpremis_ketentuan', 'id', $idKetentuan);
+    return $return;
+}
+function setoran_pengeluaran_update_7004(){
+    // Drop all primary keys.
+    db_drop_primary_key('zpremis_ketentuan');
+    // Add all primary keys including your edits.
+    $return = db_add_primary_key('zpremis_ketentuan', array('id'));
+    return $return;
+}

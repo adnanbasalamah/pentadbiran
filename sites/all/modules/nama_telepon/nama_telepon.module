@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * @return mixed
+ */
+function nama_telepon_menu() {
+    $items['nomertelepon'] = array(
+        'title' => t('Nomer Telepon'),
+        'type' => MENU_CALLBACK,
+        'access arguments' => array('admin data nama telepon'),
+        'page callback' => 'nama_telepon',
+        'weight' => 10,
+    );
+    return $items;
+}
+/**
+ * @return array
+ */
+function nama_telepon_permission() {
+    return array(
+        'access data nama telepon' => array(
+            'title' => t('access data nama telepon'),
+            'description' => t('enable to get access for data nama telepon.'),
+        ),
+        'admin data nama telepon' => array(
+            'title' => t('admin data nama telepon'),
+            'description' => t('enable to manage data nama telepon.'),
+        ),
+    );
+}
+function nama_telepon(){
+    $form = drupal_get_form('form_nomer_telepon');
+    return drupal_render($form);
+}
+
+function form_nomer_telepon($form, &$form_state, $variables = null){
+    global $user;
+    $form['#attributes'] = array('class' => array('col-sm-12'));
+    $form['nama'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Nama'),
+        '#required' => TRUE,
+        '#default_value' => '',
+    );
+    $form['telepon'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Telephone'),
+        '#default_value' => '',
+    );
+    $form['saveButton'] = array(
+        '#value' => t('Save Data Premis'),
+        '#type' => 'submit',
+        '#attributes' => array('class' => array('btn btn-primary')),
+        '#prefix' => '<div class="col-md-12">',
+        '#suffix' => '</div>',
+    );
+    return $form;
+}
+
+function form_nomer_telepon_submit($form, &$form_state) {
+    global $user;
+    $values = $form_state['values'];
+    $savedData = array();
+    $savedData['nama'] = $values['nama'];
+    $savedData['alamat'] = $values['alamat'];
+    $insertedData = saveTableData('znomertelepon','admin data nama telepon',$savedData,'id');
+    $returnData = $insertedData;
+    drupal_set_message('Nomer telepon berhasil disimpan...!!');
+    return $returnData;
+}

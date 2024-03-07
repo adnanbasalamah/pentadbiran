@@ -1,0 +1,8 @@
+name = Properti Premis Module
+version = 7.01
+description = data properti premis for keuangan ikhwan.
+core = 7.x
+package = Keuangan Ikhwan
+dependencies[] = data_premis
+files[] = properti_premis.module
+files[] = properti_premis.install

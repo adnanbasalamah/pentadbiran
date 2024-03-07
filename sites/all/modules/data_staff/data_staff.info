@@ -1,0 +1,10 @@
+name = Data Staff Module
+version = 7.01
+description = data staff for ikhwan report system.
+core = 7.x
+package = Keuangan Ikhwan
+dependencies[] = ikhwan_core
+dependencies[] = data_negeri
+dependencies[] = data_premis
+files[] = data_staff.module
+files[] = data_staff.install

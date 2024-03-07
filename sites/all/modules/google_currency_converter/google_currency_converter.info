@@ -1,0 +1,13 @@
+name = Google Currency Converter
+description  = This module will convert your curency using Google Calculator API
+configure = admin/config/regional/google-currency-converter
+core = 7.x
+
+files[] = tests/google_currency_converter.test
+
+; Information added by Drupal.org packaging script on 2016-03-07
+version = "7.x-1.1"
+core = "7.x"
+project = "google_currency_converter"
+datestamp = "1457371557"
+

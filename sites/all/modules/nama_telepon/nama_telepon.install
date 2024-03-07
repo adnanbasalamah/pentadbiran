@@ -1,0 +1,26 @@
+<?php
+/**
+ * @file
+ * Install file for data overhead module.
+ */
+/**
+ * Implements hook_install().
+ * - Add the body field.
+ */
+
+function nama_telepon_install() {
+    drupal_set_message("Data Nama & Telepon Module successfully installed");
+}
+function nama_telepon_uninstall() {
+    drupal_set_message("Data Nama & Telepon successfully removed");
+}
+function nama_telepon_enable() {
+    drupal_set_message("Data Nama & Telepon Module successfully enabled");
+}
+function nama_telepon_disable() {
+    drupal_set_message("Data Nama & Telepon Module successfully disabled");
+}
+function nama_telepon_schema() {
+    require 'nama_telepon.schema.inc';
+    return $schema;
+}

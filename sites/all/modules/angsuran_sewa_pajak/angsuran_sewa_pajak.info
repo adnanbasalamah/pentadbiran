@@ -1,0 +1,7 @@
+name = Angsuran Sewa dan Pajak
+version = 7.01
+description = pendataan angsuran, sewa dan pajak.
+core = 7.x
+package = Ikhwan Report
+files[] = angsuran_sewa_pajak.module
+files[] = angsuran_sewa_pajak.install

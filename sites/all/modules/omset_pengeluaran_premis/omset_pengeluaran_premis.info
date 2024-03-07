@@ -1,0 +1,9 @@
+name = Omset dan Pengeluaran Premis Module
+version = 7.01
+description = modul omset dan pengeluaran premis.
+core = 7.x
+package = Keuangan Ikhwan
+dependencies[] = ikhwan_core
+dependencies[] = unit_premis
+files[] = omset_pengeluaran_premis.module
+files[] = omset_pengeluaran_premis.install

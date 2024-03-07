@@ -1,0 +1,31 @@
+<?php
+header('Access-Control-Allow-Origin: *');
+/**
+ * @return mixed
+ */
+function pemasukan_pengeluaran_menu() {
+    $items['pemasukanpengeluaran'] = array(
+        'title' => t('Pemasukan & Pengeluaran Zone'),
+        'type' => MENU_CALLBACK,
+        'access arguments' => array('admin data pemasukan pengeluaran'),
+        'page callback' => 'pemasukan_pengeluaran',
+        'weight' => 10,
+    );
+    return $items;
+}
+/**
+ * @return array
+ */
+function pemasukan_pengeluaran_permission() {
+    return array(
+        'access data pemasukan pengeluaran' => array(
+            'title' => t('access data pemasukan pengeluaran'),
+            'description' => t('enable to get access for data pemasukan pengeluaran.'),
+        ),
+        'admin data pemasukan pengeluaran' => array(
+            'title' => t('admin data pemasukan pengeluaran'),
+            'description' => t('enable to manage data pemasukan pengeluaran.'),
+        ),
+    );
+}
+require_once 'pemasukan_pengeluaran.api.php.inc';

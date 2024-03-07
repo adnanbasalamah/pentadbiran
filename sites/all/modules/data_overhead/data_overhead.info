@@ -1,0 +1,9 @@
+name = Data Overhead Premis
+version = 7.01
+description = data overhead for ikhwan report system.
+core = 7.x
+package = Keuangan Ikhwan
+dependencies[] = ikhwan_core
+dependencies[] = data_premis
+files[] = data_overhead.module
+files[] = data_overhead.install

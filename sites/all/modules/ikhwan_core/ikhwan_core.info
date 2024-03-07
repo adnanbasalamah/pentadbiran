@@ -1,0 +1,7 @@
+name = Ikhwan Report Core Module
+version = 7.01
+description = core module for ikhwan report system.
+core = 7.x
+package = Ikhwan Report
+files[] = ikhwan_core.module
+files[] = ikhwan_core.install

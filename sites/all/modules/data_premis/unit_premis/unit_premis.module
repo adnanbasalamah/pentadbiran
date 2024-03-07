@@ -1,0 +1,42 @@
+<?php
+header('Access-Control-Allow-Origin: *');
+/**
+ * @return mixed
+ */
+function unit_premis_menu() {
+  $items['masterdata/premis/unit'] = array(
+    'title' => 'Unit Premis',
+    'description' => 'Unit Premis.',
+    'page callback' => 'unit_premis_page',
+    'access arguments' => array('access unit premis'),
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'main-menu',
+    'plid' => 871,
+    'file' => 'unit_premis.inc',
+  );
+  $items['masterdata/premis/unit/delete'] = array(
+    'title' => t('Delete data unit'),
+    'description' => 'Delete data unit.',
+    'page callback' => 'delete_unit_data',
+    'access arguments' => array('admin unit premis'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  return $items;
+}
+/**
+ * @return array
+ */
+function unit_premis_permission() {
+  return array(
+    'access unit premis' => array(
+      'title' => t('access unit premis'),
+      'description' => t('enable to get access for unit premis.'),
+    ),
+    'admin unit premis' => array(
+      'title' => t('admin unit premis'),
+      'description' => t('enable to manage unit premis.'),
+    ),
+  );
+}
+require_once 'api.unit_premis.inc';

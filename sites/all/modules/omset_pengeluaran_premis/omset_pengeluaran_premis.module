@@ -1,0 +1,35 @@
+<?php
+header('Access-Control-Allow-Origin: *');
+/**
+ * @return mixed
+ */
+function omset_pengeluaran_premis_menu() {
+    $items['masterdata/premis/laporanomset'] = array(
+        'title' => 'Omset & Pengeluaran Premis',
+        'description' => 'Omset & Pengeluaran Premis.',
+        'page callback' => 'omset_pengeluaran_premis',
+        'access arguments' => array('access omset pengeluaran premis module'),
+        'type' => MENU_NORMAL_ITEM,
+        'menu_name' => 'main-menu',
+        'plid' => 871,
+        'file' => 'omset_pengeluaran_premis.inc',
+    );
+    return $items;
+}
+
+/**
+ * @return array
+ */
+function omset_pengeluaran_premis_permission() {
+    return array(
+        'access omset pengeluaran premis module' => array(
+            'title' => t('access omset pengeluaran premis module'),
+            'description' => t('enable to get access for omset pengeluaran premis.'),
+        ),
+        'admin omset pengeluaran premis module' => array(
+            'title' => t('admin omset pengeluaran premis module'),
+            'description' => t('enable to get admin access for omset pengeluaran premis module.'),
+        ),
+    );
+}
+require_once 'api.omset_pengeluaran_premis.inc';

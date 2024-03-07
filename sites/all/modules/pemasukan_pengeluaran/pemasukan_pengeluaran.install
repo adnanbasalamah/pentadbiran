@@ -1,0 +1,35 @@
+<?php
+/**
+ * @file
+ * Install file for data overhead module.
+ */
+/**
+ * Implements hook_install().
+ * - Add the body field.
+ */
+
+function pemasukan_pengeluaran_install() {
+    drupal_set_message("Data Pemasukan & Pengeluaran Module successfully installed");
+}
+function pemasukan_pengeluaran_uninstall() {
+    drupal_set_message("Data Pemasukan & Pengeluaran successfully removed");
+}
+function pemasukan_pengeluaran_enable() {
+    drupal_set_message("Data Pemasukan & Pengeluaran Module successfully enabled");
+}
+function pemasukan_pengeluaran_disable() {
+    drupal_set_message("Data Pemasukan & Pengeluaran Module successfully disabled");
+}
+function pemasukan_pengeluaran_schema() {
+    require 'pemasukan_pengeluaran.schema.inc';
+    return $schema;
+}
+function pemasukan_pengeluaran_update_7001(){
+  $ZoneId = array(
+    'type'        => 'int',
+    'size'        => 'big',
+    'description' => 'Zon Id related to zon.',
+  );
+  $return = db_add_field( 'zdatazone_pemasukan_pengeluaran', 'id_zone', $ZoneId);
+  return $return;
+}

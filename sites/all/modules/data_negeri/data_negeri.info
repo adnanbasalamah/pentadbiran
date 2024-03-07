@@ -1,0 +1,8 @@
+name = Data Negeri Module
+version = 7.01
+description = data negeri for ikhwan report system.
+core = 7.x
+package = Keuangan Ikhwan
+dependencies[] = ikhwan_core
+files[] = data_negeri.module
+files[] = data_negeri.install

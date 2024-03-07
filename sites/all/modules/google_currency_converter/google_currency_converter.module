@@ -1,0 +1,355 @@
+<?php
+
+/**
+ * @file
+ * Google Currency Converter Module.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function google_currency_converter_help($path, $arg) {
+  if ($path == 'admin/help#google_currency_converter') {
+    $output = '';
+    $output .= '<h3>' . t('About') . '</h3>';
+    $output .= '<p>' . t("This module will help you'r website to convert currency using google finance calculator. It will give you defult block option to convert currency from one format to another. It also provides option to set you'r default block currency.") . '</p>';
+    return $output;
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function google_currency_converter_menu() {
+  $items = array();
+  $items['admin/config/regional/google-currency-converter'] = array(
+    'title' => 'Google Currency Converter',
+    'description' => "Configure you'r default block currency to use Google Currency Converter.",
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('google_currency_converter_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'google_currency_converter.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function google_currency_converter_block_info() {
+  $blocks = array();
+  $blocks['google_currency_converter_block'] = array(
+    'info' => t('Google Currency Converter'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function google_currency_converter_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'google_currency_converter_block':
+      $block['subject'] = t('Google Currency Converter');
+      $block['content'] = drupal_get_form('google_currency_converter_form');
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Form handler for the google_currency_converter_block.
+ */
+function google_currency_converter_form($form, &$from_state) {
+  $form = array();
+  $form['google_currency_converter_from'] = array(
+    '#type' => 'select',
+    '#title' => t('Select Your Currency From'),
+    '#options' => google_currency_converter_country_list(),
+    '#default_value' => variable_get('google_currency_converter_from', ''),
+    '#attributes' => array('class' => array('google-currency-converter-element')),
+    '#required' => TRUE,
+  );
+  $form['google_currency_converter_to'] = array(
+    '#type' => 'select',
+    '#title' => t('Select Your Currency To'),
+    '#options' => google_currency_converter_country_list(),
+    '#default_value' => variable_get('google_currency_converter_to', ''),
+    '#attributes' => array('class' => array('google-currency-converter-element')),
+    '#required' => TRUE,
+  );
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'google_currency_converter') . '/google_currency_converter.css',
+  );
+  $form['amount'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Your Amount'),
+    '#attributes' => array('class' => array('google-currency-converter-element')),
+    '#required' => TRUE,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Convert'),
+  );
+  return $form;
+}
+
+/**
+ * Google currency convert validate function.
+ */
+function google_currency_converter_form_validate($form, &$form_state) {
+  if ($form_state['values']['google_currency_converter_from'] == $form_state['values']['google_currency_converter_to']) {
+    form_set_error('google_currency_converter_to', t('Please select different currency both currency are same.'));
+  }
+  if ($form_state['values']['amount'] == '0' && $form_state['values']['amount'] == '0.0') {
+    form_set_error('amount', t('Amount field must be greater then zero'));
+  }
+  if (!is_numeric($form_state['values']['amount'])) {
+    form_set_error('amount', t('Amount field must be a number.'));
+  }
+}
+
+/**
+ * Google currency converter submit function.
+ */
+function google_currency_converter_form_submit($form, &$form_state) {
+  $from = $form_state['values']['google_currency_converter_from'];
+  $to = $form_state['values']['google_currency_converter_to'];
+  $amount = $form_state['values']['amount'];
+  $result = google_currency_converter_helper($amount, $from, $to);
+  $output = t('Your selected value is from @value_from to @value_to amount is @value_amount @value_from & your converted value is @result @value_to',
+      array(
+        '@value_from' => $form_state['values']['google_currency_converter_from'],
+        '@value_to' => $form_state['values']['google_currency_converter_to'],
+        '@value_amount' => $form_state['values']['amount'],
+        '@result' => $result,
+      ));
+  $google_currency_converter_sanitized_data = check_plain($output);
+  drupal_set_message($google_currency_converter_sanitized_data);
+}
+
+/**
+ * Currency conversion helper function.
+ *
+ * @param int $amount
+ *   Amount to be converted.
+ * @param string $from
+ *   Source currency.
+ * @param string $to
+ *   Target currency.
+ *
+ * @return int
+ *   The currency amount. The converted currency amount.
+ */
+function google_currency_converter_helper($amount, $from, $to) {
+  // Google currency converter using finance converter.
+  // Base URL: https://www.google.com/finance/converter
+  // Query Parameters:
+  //   a - amount to be converted
+  //   from - source currency
+  //   to - target currency
+  $url = "https://www.google.com/finance/converter?a=$amount&from=$from&to=$to";
+
+  // fetches converted amount & store into data variable.
+  $data = file_get_contents($url);
+
+  // According to Google's current layout, it provides converted amount with
+  // target currency code within `span` tag with class `bld`.
+  // example: <span class=bld>1.5 USD</span>
+  // So, we extract converted amount using `preg_match` function.
+  // The `preg_match` function perform a regular expression match.
+  // For more information you can see http://php.net/manual/en/function.preg-match.php
+  preg_match("/<span class=bld>(.*)<\/span>/", $data, $converted);
+
+  // Along with converted amount, we have target currency code. We use `preg_replace`
+  // function to remove target currency code and extract only numeric value.
+  // The 'preg_replace' function perform a regular expression search and replace.
+  // For more Information you can see http://php.net/manual/en/function.preg-replace.php
+  $converted = preg_replace("/[^0-9.]/", "", isset($converted[1]) ? $converted[1] : NULL);
+  
+  // The 'round' function returns the rounded value of val to specified precision
+  // i.e. number of digits after the decimal point. For more information see
+  // http://php.net/manual/en/function.round.php
+  return round($converted, 2);
+}
+
+/**
+ * Provides the list of google currency converter countries.
+ */
+function google_currency_converter_country_list() {
+  $country_name = array();
+  $country_name = array(
+    'AED' => t('United Arab Emirates Dirham (AED)'),
+    'AFN' => t('Afghan Afghani (AFN)'),
+    'ALL' => t('Albanian Lek (ALL)'),
+    'AMD' => t('Armenian Dram (AMD)'),
+    'ANG' => t('Netherlands Antillean Guilder (ANG)'),
+    'AOA' => t('Angolan Kwanza (AOA)'),
+    'ARS' => t('Argentine Peso (ARS)'),
+    'AUD' => t('Australian Dollar (A$)'),
+    'AWG' => t('Aruban Florin (AWG)'),
+    'AZN' => t('Azerbaijani Manat (AZN)'),
+    'BAM' => t('Bosnia-Herzegovina Convertible Mark (BAM)'),
+    'BBD' => t('Barbadian Dollar (BBD)'),
+    'BDT' => t('Bangladeshi Taka (BDT)'),
+    'BGN' => t('Bulgarian Lev (BGN)'),
+    'BHD' => t('Bahraini Dinar (BHD)'),
+    'BIF' => t('Burundian Franc (BIF)'),
+    'BMD' => t('Bermudan Dollar (BMD)'),
+    'BND' => t('Brunei Dollar (BND)'),
+    'BOB' => t('Bolivian Boliviano (BOB)'),
+    'BRL' => t('Brazilian Real (R$)'),
+    'BSD' => t('Bahamian Dollar (BSD)'),
+    'BTC' => t('Bitcoin (฿)'),
+    'BTN' => t('Bhutanese Ngultrum (BTN)'),
+    'BWP' => t('Botswanan Pula (BWP)'),
+    'BYR' => t('Belarusian Ruble (BYR)'),
+    'BZD' => t('Belize Dollar (BZD)'),
+    'CAD' => t('Canadian Dollar (CA$)'),
+    'CDF' => t('Congolese Franc (CDF)'),
+    'CHF' => t('Swiss Franc (CHF)'),
+    'CLF' => t('Chilean Unit of Account (UF) (CLF)'),
+    'CLP' => t('Chilean Peso (CLP)'),
+    'CNH' => t('CNH (CNH)'),
+    'CNY' => t('Chinese Yuan (CN¥)'),
+    'COP' => t('Colombian Peso (COP)'),
+    'CRC' => t('Costa Rican Colón (CRC)'),
+    'CUP' => t('Cuban Peso (CUP)'),
+    'CVE' => t('Cape Verdean Escudo (CVE)'),
+    'CZK' => t('Czech Republic Koruna (CZK)'),
+    'DEM' => t('German Mark (DEM)'),
+    'DJF' => t('Djiboutian Franc (DJF)'),
+    'DKK' => t('Danish Krone (DKK)'),
+    'DOP' => t('Dominican Peso (DOP)'),
+    'DZD' => t('Algerian Dinar (DZD)'),
+    'EGP' => t('Egyptian Pound (EGP)'),
+    'ERN' => t('Eritrean Nakfa (ERN)'),
+    'ETB' => t('Ethiopian Birr (ETB)'),
+    'EUR' => t('Euro (€)'),
+    'FIM' => t('Finnish Markka (FIM)'),
+    'FJD' => t('Fijian Dollar (FJD)'),
+    'FKP' => t('Falkland Islands Pound (FKP)'),
+    'FRF' => t('French Franc (FRF)'),
+    'GBP' => t('British Pound (£)'),
+    'GEL' => t('Georgian Lari (GEL)'),
+    'GHS' => t('Ghanaian Cedi (GHS)'),
+    'GIP' => t('Gibraltar Pound (GIP)'),
+    'GMD' => t('Gambian Dalasi (GMD)'),
+    'GNF' => t('Guinean Franc (GNF)'),
+    'GTQ' => t('Guatemalan Quetzal (GTQ)'),
+    'GYD' => t('Guyanaese Dollar (GYD)'),
+    'HKD' => t('Hong Kong Dollar (HK$)'),
+    'HNL' => t('Honduran Lempira (HNL)'),
+    'HRK' => t('Croatian Kuna (HRK)'),
+    'HTG' => t('Haitian Gourde (HTG)'),
+    'HUF' => t('Hungarian Forint (HUF)'),
+    'IDR' => t('Indonesian Rupiah (IDR)'),
+    'IEP' => t('Irish Pound (IEP)'),
+    'ILS' => t('Israeli New Sheqel (₪)'),
+    'INR' => t('Indian Rupee (Rs.)'),
+    'IQD' => t('Iraqi Dinar (IQD)'),
+    'IRR' => t('Iranian Rial (IRR)'),
+    'ISK' => t('Icelandic Króna (ISK)'),
+    'ITL' => t('Italian Lira (ITL)'),
+    'JMD' => t('Jamaican Dollar (JMD)'),
+    'JOD' => t('Jordanian Dinar (JOD)'),
+    'JPY' => t('Japanese Yen (¥)'),
+    'KES' => t('Kenyan Shilling (KES)'),
+    'KGS' => t('Kyrgystani Som (KGS)'),
+    'KHR' => t('Cambodian Riel (KHR)'),
+    'KMF' => t('Comorian Franc (KMF)'),
+    'KPW' => t('North Korean Won (KPW)'),
+    'KRW' => t('South Korean Won (₩)'),
+    'KWD' => t('Kuwaiti Dinar (KWD)'),
+    'KYD' => t('Cayman Islands Dollar (KYD)'),
+    'KZT' => t('Kazakhstani Tenge (KZT)'),
+    'LAK' => t('Laotian Kip (LAK)'),
+    'LBP' => t('Lebanese Pound (LBP)'),
+    'LKR' => t('Sri Lankan Rupee (LKR)'),
+    'LRD' => t('Liberian Dollar (LRD)'),
+    'LSL' => t('Lesotho Loti (LSL)'),
+    'LTL' => t('Lithuanian Litas (LTL)'),
+    'LVL' => t('Latvian Lats (LVL)'),
+    'LYD' => t('Libyan Dinar (LYD)'),
+    'MAD' => t('Moroccan Dirham (MAD)'),
+    'MDL' => t('Moldovan Leu (MDL)'),
+    'MGA' => t('Malagasy Ariary (MGA)'),
+    'MKD' => t('Macedonian Denar (MKD)'),
+    'MMK' => t('Myanmar Kyat (MMK)'),
+    'MNT' => t('Mongolian Tugrik (MNT)'),
+    'MOP' => t('Macanese Pataca (MOP)'),
+    'MRO' => t('Mauritanian Ouguiya (MRO)'),
+    'MUR' => t('Mauritian Rupee (MUR)'),
+    'MVR' => t('Maldivian Rufiyaa (MVR)'),
+    'MWK' => t('Malawian Kwacha (MWK)'),
+    'MXN' => t('Mexican Peso (MX$)'),
+    'MYR' => t('Malaysian Ringgit (MYR)'),
+    'MZN' => t('Mozambican Metical (MZN)'),
+    'NAD' => t('Namibian Dollar (NAD)'),
+    'NGN' => t('Nigerian Naira (NGN)'),
+    'NIO' => t('Nicaraguan Córdoba (NIO)'),
+    'NOK' => t('Norwegian Krone (NOK)'),
+    'NPR' => t('Nepalese Rupee (NPR)'),
+    'NZD' => t('New Zealand Dollar (NZ$)'),
+    'OMR' => t('Omani Rial (OMR)'),
+    'PAB' => t('Panamanian Balboa (PAB)'),
+    'PEN' => t('Peruvian Nuevo Sol (PEN)'),
+    'PGK' => t('Papua New Guinean Kina (PGK)'),
+    'PHP' => t('Philippine Peso (Php)'),
+    'PKG' => t('PKG (PKG)'),
+    'PKR' => t('Pakistani Rupee (PKR)'),
+    'PLN' => t('Polish Zloty (PLN)'),
+    'PYG' => t('Paraguayan Guarani (PYG)'),
+    'QAR' => t('Qatari Rial (QAR)'),
+    'RON' => t('Romanian Leu (RON)'),
+    'RSD' => t('Serbian Dinar (RSD)'),
+    'RUB' => t('Russian Ruble (RUB)'),
+    'RWF' => t('Rwandan Franc (RWF)'),
+    'SAR' => t('Saudi Riyal (SAR)'),
+    'SBD' => t('Solomon Islands Dollar (SBD)'),
+    'SCR' => t('Seychellois Rupee (SCR)'),
+    'SDG' => t('Sudanese Pound (SDG)'),
+    'SEK' => t('Swedish Krona (SEK)'),
+    'SGD' => t('Singapore Dollar (SGD)'),
+    'SHP' => t('St. Helena Pound (SHP)'),
+    'SKK' => t('Slovak Koruna (SKK)'),
+    'SLL' => t('Sierra Leonean Leone (SLL)'),
+    'SOS' => t('Somali Shilling (SOS)'),
+    'SRD' => t('Surinamese Dollar (SRD)'),
+    'STD' => t('São Tomé &amp; Príncipe Dobra (STD)'),
+    'SVC' => t('Salvadoran Colón (SVC)'),
+    'SYP' => t('Syrian Pound (SYP)'),
+    'SZL' => t('Swazi Lilangeni (SZL)'),
+    'THB' => t('Thai Baht (THB)'),
+    'TJS' => t('Tajikistani Somoni (TJS)'),
+    'TMT' => t('Turkmenistani Manat (TMT)'),
+    'TND' => t('Tunisian Dinar (TND)'),
+    'TOP' => t('Tongan Paʻanga (TOP)'),
+    'TRY' => t('Turkish Lira (TRY)'),
+    'TTD' => t('Trinidad &amp; Tobago Dollar (TTD)'),
+    'TWD' => t('New Taiwan Dollar (NT$)'),
+    'TZS' => t('Tanzanian Shilling (TZS)'),
+    'UAH' => t('Ukrainian Hryvnia (UAH)'),
+    'UGX' => t('Ugandan Shilling (UGX)'),
+    'USD' => t('US Dollar ($)'),
+    'UYU' => t('Uruguayan Peso (UYU)'),
+    'UZS' => t('Uzbekistani Som (UZS)'),
+    'VEF' => t('Venezuelan Bolívar (VEF)'),
+    'VND' => t('Vietnamese Dong (₫)'),
+    'VUV' => t('Vanuatu Vatu (VUV)'),
+    'WST' => t('Samoan Tala (WST)'),
+    'XAF' => t('Central African CFA Franc (FCFA)'),
+    'XCD' => t('East Caribbean Dollar (EC$)'),
+    'XDR' => t('Special Drawing Rights (XDR)'),
+    'XOF' => t('West African CFA Franc (CFA)'),
+    'XPF' => t('CFP Franc (CFPF)'),
+    'YER' => t('Yemeni Rial (YER)'),
+    'ZAR' => t('South African Rand (ZAR)'),
+    'ZMK' => t('Zambian Kwacha (1968–2012) (ZMK)'),
+    'ZMW' => t('Zambian Kwacha (ZMW)'),
+    'ZWL' => t('Zimbabwean Dollar (2009) (ZWL)'),
+  );
+  return $country_name;
+}

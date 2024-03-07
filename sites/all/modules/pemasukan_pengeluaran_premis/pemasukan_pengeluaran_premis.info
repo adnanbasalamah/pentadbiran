@@ -1,0 +1,9 @@
+name = Pemasukan dan Pengeluaran Premis Module
+version = 7.01
+description = modul pemasukan dan pengeluaran premis.
+core = 7.x
+package = Keuangan Ikhwan
+dependencies[] = ikhwan_core
+dependencies[] = data_premis
+files[] = pemasukan_pengeluaran_premis.module
+files[] = pemasukan_pengeluaran_premis.install

@@ -1,0 +1,26 @@
+<?php
+/**
+ * @file
+ * Install file for data premis module.
+ */
+/**
+ * Implements hook_install().
+ * - Add the body field.
+ */
+
+function unit_premis_install() {
+  drupal_set_message("Unit Premis Module successfully installed");
+}
+function unit_premis_uninstall() {
+  drupal_set_message("Data Premis successfully removed");
+}
+function unit_premis_enable() {
+  drupal_set_message("Unit Premis Module successfully enabled");
+}
+function unit_premis_disable() {
+  drupal_set_message("Unit Premis Module successfully disabled");
+}
+function unit_premis_schema() {
+  require 'unit_premis.schema.inc';
+  return $schema;
+}

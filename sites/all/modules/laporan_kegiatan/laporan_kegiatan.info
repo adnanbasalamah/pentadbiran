@@ -1,0 +1,7 @@
+name = Laporan Kegiatan Module
+version = 7.01
+description = laporan kegiatan ikhwan report system.
+core = 7.x
+package = Ikhwan Report
+files[] = laporan_kegiatan.module
+files[] = laporan_kegiatan.install

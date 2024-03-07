@@ -1,0 +1,68 @@
+<?php
+/**
+ * @file
+ * Install file for data staff module.
+ */
+/**
+ * Implements hook_install().
+ * - Add the body field.
+ */
+
+function data_staff_install() {
+    drupal_set_message("Data Staff Module successfully installed");
+}
+function data_staff_uninstall() {
+    drupal_set_message("Data Staff successfully removed");
+}
+function data_staff_enable() {
+    drupal_set_message("Data Staff Module successfully enabled");
+}
+function data_staff_disable() {
+    drupal_set_message("Data Staff Module successfully disabled");
+}
+function data_staff_schema() {
+    require 'data_staff.schema.inc';
+    return $schema;
+}
+function data_staff_update_7001(){
+    $return = array();
+    $IdIbu = array(
+        'type' => 'varchar',
+        'length' => 30,
+        'description' => 'ID Ibu dari staff/anak',
+    );
+    $return[] = db_add_field( 'zdatastaff_detail', 'id_ibu', $IdIbu);
+    $idsekolah = array(
+        'type' => 'varchar',
+        'length' => 30,
+        'description' => 'ID Sekolah dari data unit/premis',
+    );
+    $return[] = db_add_field( 'zdatastaff_detail', 'idsekolah', $idsekolah);
+    $namasekolah = array(
+         'type' => 'varchar',
+         'length' => 255,
+         'description' => 'Nama Sekolah jika sekolah luar',
+    );
+    $return[] = db_add_field( 'zdatastaff_detail', 'nama_sekolah', $namasekolah);
+    foreach($return as $value){
+        if ($value == false){
+            $returnBol = $value;
+         }
+    }
+    return $returnBol;
+}
+function data_staff_update_7002(){
+    $return = array();
+    $staff_level = array(
+         'type' => 'int',
+         'default' => 0,
+         'description' => 'Staff level 0 => Staff.',
+    );
+    $return[] = db_add_field( 'zdatastaff_detail', 'staff_level', $staff_level);
+    foreach($return as $value){
+        if ($value == false){
+            $returnBol = $value;
+         }
+    }
+    return $returnBol;
+}

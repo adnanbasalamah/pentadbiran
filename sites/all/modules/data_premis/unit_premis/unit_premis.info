@@ -1,0 +1,8 @@
+name = Unit Premis Module
+version = 7.01
+description = unit premis for ikhwan report system.
+core = 7.x
+package = Keuangan Ikhwan
+dependencies[] = data_premis
+files[] = unit_premis.module
+files[] = unit_premis.install

@@ -1,0 +1,56 @@
+<?php
+header('Access-Control-Allow-Origin: *');
+/**
+ * @return mixed
+ */
+function laporan_kegiatan_menu() {
+    $items['laporankegiatan'] = array(
+        'title' => 'Laporan Kegiatan Module',
+        'description' => 'Laporan kegiatan module.',
+        'page callback' => 'laporan_kegiatan',
+        'access arguments' => array('access laporan kegiatan module'),
+    );
+    $items['kegiatan'] = array(
+        'title' => 'Kegiatan',
+        'type' => MENU_NORMAL_ITEM,
+        'menu_name' => 'main-menu',
+        'access arguments' => array('access laporan kegiatan module'),
+        'page callback' => 'list_kegiatan',
+        'weight' => 8,
+        'file' => 'laporan_kegiatan.inc',
+    );
+    $items['kegiatan/tempat'] = array(
+        'title' => 'Tempat Kegiatan',
+        'type' => MENU_NORMAL_ITEM,
+        'menu_name' => 'main-menu',
+        'plid' => 1685,
+        'access arguments' => array('access laporan kegiatan module'),
+        'page callback' => 'list_tempat_kegiatan',
+        'weight' => 8,
+        'file' => 'tempat_kegiatan.inc',
+    );
+    return $items;
+}
+
+/**
+ * @return array
+ */
+function laporan_kegiatan_permission() {
+    return array(
+        'access laporan kegiatan module' => array(
+            'title' => t('access laporan kegiatan module'),
+            'description' => t('enable to get access for laporan kegiatan.'),
+        ),
+        'admin laporan kegiatan module' => array(
+            'title' => t('admin laporan kegiatan module'),
+            'description' => t('enable to get admin access for laporan kegiatan module.'),
+        ),
+    );
+}
+require_once 'api.laporan_kegiatan.inc';
+/**
+ * @return string
+ */
+function laporan_kegiatan(){
+    return 'Laporan Kegiatan Module';
+}

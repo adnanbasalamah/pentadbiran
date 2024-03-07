@@ -1,0 +1,46 @@
+<?php
+/**
+ * @file
+ * Install file for data negeri module.
+ */
+/**
+ * Implements hook_install().
+ * - Add the body field.
+ */
+
+function data_negeri_install() {
+    drupal_set_message("Data Negeri Module successfully installed");
+}
+function data_negeri_uninstall() {
+    drupal_set_message("Data Negeri successfully removed");
+}
+function data_negeri_enable() {
+    drupal_set_message("Data Negeri Module successfully enabled");
+}
+function data_negeri_disable() {
+    drupal_set_message("Data Negeri Module successfully disabled");
+}
+function data_negeri_schema() {
+    require 'data_negeri.schema.inc';
+    return $schema;
+}
+function data_negeri_update_7001(){
+  $ZoneId = array(
+    'type'        => 'int',
+    'size'        => 'big',
+    'not null'    => TRUE,
+    'default' => 1,
+    'description' => 'Zon Id related to zon.',
+  );
+  $return = db_add_field( 'znegeri_zone', 'id_zone', $ZoneId);
+  return $return;
+}
+function data_negeri_update_7002(){
+  db_drop_primary_key('znegeri_zone');
+  $return = db_add_primary_key('znegeri_zone', array('id_zone','idnegeri'));
+  return $return;
+}
+function data_negeri_update_7003(){
+  $return = db_drop_field('znegeri_zone', 'zone');
+  return $return;
+}

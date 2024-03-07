@@ -1,0 +1,10 @@
+name = Setoran dan Pengeluaran Module
+version = 7.01
+description = modul setoran dan pengeluaran.
+core = 7.x
+package = Keuangan Ikhwan
+dependencies[] = ikhwan_core
+dependencies[] = data_premis
+dependencies[] = data_overhead
+files[] = setoran_pengeluaran.module
+files[] = setoran_pengeluaran.install

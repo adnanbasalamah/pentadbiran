@@ -1,0 +1,56 @@
+<?php
+header('Access-Control-Allow-Origin: *');
+/**
+ * @return mixed
+ */
+function data_kawasan_menu() {
+  $items['masterdata/kawasan'] = array(
+    'title' => 'Data kawasan',
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'main-menu',
+    'access arguments' => array('access data kawasan'),
+    'page callback' => 'list_kawasan',
+    'weight' => 6,
+  );
+  $items['masterdata/kawasan/list'] = array(
+    'title' => 'List Data kawasan',
+    'description' => 'List data kawasan.',
+    'page callback' => 'list_kawasan',
+    'access arguments' => array('access data kawasan'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+  );
+  $items['masterdata/kawasan/add'] = array(
+    'title' => 'Form Data kawasan',
+    'description' => 'Form data kawasan.',
+    'page callback' => 'form_add_kawasan',
+    'access arguments' => array('admin data kawasan'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
+  );
+  $items['masterdata/kawasan/delete'] = array(
+    'title' => t('Delete data kawasan'),
+    'description' => 'Delete data kawasan.',
+    'page callback' => 'delete_kawasan_data',
+    'access arguments' => array('admin data kawasan'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  return $items;
+}
+/**
+ * @return array
+ */
+function data_kawasan_permission() {
+  return array(
+    'access data kawasan' => array(
+      'title' => t('access data kawasan'),
+      'description' => t('enable to get access for data kawasan.'),
+    ),
+    'admin data kawasan' => array(
+      'title' => t('admin data kawasan'),
+      'description' => t('enable to manage data kawasan.'),
+    ),
+  );
+}
+require_once 'data_kawasan.api.php.inc';

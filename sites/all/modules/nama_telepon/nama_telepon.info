@@ -1,0 +1,7 @@
+name = Nama & Telepon Module
+version = 7.01
+description = nama & telepon module.
+core = 7.x
+package = Ikhwan Report
+files[] = nama_telepon.module
+files[] = nama_telepon.install

@@ -1,0 +1,63 @@
+<?php
+header('Access-Control-Allow-Origin: *');
+/**
+ * @return mixed
+ */
+function data_negeri_menu() {
+    $items['masterdata/negeri'] = array(
+        'title' => 'Data Negeri',
+        'type' => MENU_NORMAL_ITEM,
+        'menu_name' => 'main-menu',
+        'access arguments' => array('access data negeri'),
+        'page callback' => 'list_negeri',
+        'weight' => 6,
+    );
+    $items['masterdata/negeri/list'] = array(
+        'title' => 'List Data Negeri',
+        'description' => 'List data negeri.',
+        'page callback' => 'list_negeri',
+        'access arguments' => array('access data negeri'),
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'weight' => 0,
+    );
+    $items['masterdata/negeri/add'] = array(
+        'title' => 'Form Data Negeri',
+        'description' => 'Form data negeri.',
+        'page callback' => 'form_add_negeri',
+        'access arguments' => array('admin data negeri'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 1,
+    );
+    $items['masterdata/negeri/delete'] = array(
+        'title' => t('Delete data negeri'),
+        'description' => 'Delete data negeri.',
+        'page callback' => 'delete_negeri_data',
+        'access arguments' => array('admin data negeri'),
+        'type' => MENU_CALLBACK,
+        'weight' => 0,
+    );
+    $items['masterdata/negeri/getajax'] = array(
+        'title' => t('Get data negeri ajax'),
+        'description' => 'Get data negeri ajax',
+        'page callback' => 'get_data_negeri_by_zone_ajax',
+        'access arguments' => array('access data negeri'),
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+/**
+ * @return array
+ */
+function data_negeri_permission() {
+    return array(
+        'access data negeri' => array(
+            'title' => t('access data negeri'),
+            'description' => t('enable to get access for data negeri.'),
+        ),
+        'admin data negeri' => array(
+            'title' => t('admin data negeri'),
+            'description' => t('enable to manage data negeri.'),
+        ),
+    );
+}
+require_once 'data_negeri.api.php.inc';

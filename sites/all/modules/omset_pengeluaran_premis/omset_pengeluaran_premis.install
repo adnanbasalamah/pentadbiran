@@ -1,0 +1,26 @@
+<?php
+/**
+ * @file
+ * Install file for data overhead module.
+ */
+/**
+ * Implements hook_install().
+ * - Add the body field.
+ */
+
+function omset_pengeluaran_premis_install() {
+    drupal_set_message("Data Omset Pengeluaran Premis Module successfully installed");
+}
+function omset_pengeluaran_premis_uninstall() {
+    drupal_set_message("Data Omset Pengeluaran Premis successfully removed");
+}
+function omset_pengeluaran_premis_enable() {
+    drupal_set_message("Data Omset Pengeluaran Premis Module successfully enabled");
+}
+function omset_pengeluaran_premis_disable() {
+    drupal_set_message("Data Omset Pengeluaran Premis Module successfully disabled");
+}
+function omset_pengeluaran_premis_schema() {
+    require 'omset_pengeluaran_premis.schema.inc';
+    return $schema;
+}

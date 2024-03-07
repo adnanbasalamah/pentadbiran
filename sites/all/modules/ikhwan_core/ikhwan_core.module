@@ -1,0 +1,298 @@
+<?php
+header('Access-Control-Allow-Origin: *');
+/**
+ * @return mixed
+ */
+function ikhwan_core_menu()
+{
+  $items['coremodule'] = array(
+    'title' => 'Ikhwan Report Core Module',
+    'description' => 'Ikhwan report core module.',
+    'page callback' => 'ikhwanreport',
+    'access arguments' => array('access ikhwan report core module'),
+  );
+  $items['masterdata/zone'] = array(
+    'title' => 'Data Zone',
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'main-menu',
+    'access arguments' => array('admin ikhwan data zone'),
+    'page callback' => 'listZone',
+    'weight' => 5,
+  );
+  $items['masterdata/zone/list'] = array(
+    'title' => 'List Data Zone',
+    'description' => 'List data zone.',
+    'page callback' => 'listZone',
+    'access arguments' => array('admin ikhwan data zone'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+  );
+  $items['masterdata/zone/add'] = array(
+    'title' => 'Form Data Zone',
+    'description' => 'Form data zone.',
+    'page callback' => 'formZone',
+    'access arguments' => array('admin ikhwan data zone'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
+  );
+  $items['chartsample'] = array(
+    'title' => 'Ikhwan Chart Sample',
+    'description' => 'Chart example.',
+    'page callback' => 'ikhwan_chart_sample',
+    'access arguments' => array('access ikhwan report core module'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['graphkeuangan'] = array(
+    'title' => 'Graph Keuangan GISBH',
+    'description' => 'Graphic PKH, Dana Yayasan, Mahar MI',
+    'page callback' => 'ikhwan_chart_keuangan',
+    'access arguments' => array('access ikhwan report core module'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['masterdata/assignment'] = array(
+    'title' => 'Data Assignment',
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'main-menu',
+    'access arguments' => array('admin ikhwan data assignment'),
+    'page callback' => 'listAssigment',
+    'weight' => 9,
+  );
+  $items['masterdata/assignment/list'] = array(
+    'title' => 'List Jenis Assignment',
+    'description' => 'List jenis assignment.',
+    'page callback' => 'listAssigment',
+    'access arguments' => array('admin ikhwan jenis assignment'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+  );
+  $items['masterdata/assignment/add'] = array(
+    'title' => 'Form Jenis Assignment',
+    'description' => 'Form jenis assignment.',
+    'page callback' => 'formInputJenisAssigment',
+    'access arguments' => array('admin ikhwan jenis assignment'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
+  );
+  $items['assignmentzone'] = array(
+    'title' => 'Assignment Zone',
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'main-menu',
+    'access arguments' => array('key in data assignment'),
+    'page callback' => 'assigmentZone',
+    'weight' => 10,
+  );
+  $items['assignmentzone/import'] = array(
+    'title' => 'Form Import Assignment',
+    'description' => 'Form import data assignment.',
+    'page callback' => 'upload_data_assignment',
+    'access arguments' => array('admin ikhwan data assignment'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
+  );
+  $items['assignmentdashboard'] = array(
+    'title' => t('Assignment Dashboard'),
+    'description' => 'GISBH Assignment Dashboard.',
+    'page callback' => 'ikhwan_chart_dashboard',
+    'access arguments' => array('access ikhwan data assignment'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['overheaddashboard'] = array(
+    'title' => t('Overhead Dashboard'),
+    'description' => 'GISBH Overhead Dashboard.',
+    'page callback' => 'overhead_dashboard',
+    'access arguments' => array('access ikhwan data assignment'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['pengeluaranassignment'] = array(
+    'title' => 'Pengeluaran Assignment',
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'main-menu',
+    'access arguments' => array('admin ikhwan data assignment'),
+    'page callback' => 'pengeluaran_assignment',
+    'weight' => 11,
+  );
+  $items['userzone'] = array(
+    'title' => 'User Zone/ Premis',
+    'type' => MENU_NORMAL_ITEM,
+    'menu_name' => 'main-menu',
+    'access arguments' => array('admin ikhwan data zone'),
+    'page callback' => 'user_zone',
+    'weight' => 12,
+  );
+  $items['assignmentdashboardtest'] = array(
+    'title' => t('Assignment Dashboard'),
+    'description' => 'GISBH Assignment Dashborad.',
+    'page callback' => 'assignment_total_3d_column_chart',
+    'access arguments' => array('access ikhwan data assignment'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['cashflowdashboard'] = array(
+    'title' => t('Cashflow Dashboard'),
+    'description' => 'GISBH Cashflow Dashboard.',
+    'page callback' => 'cashflow_dashboard',
+    'access arguments' => array('access ikhwan data assignment'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['calculateage'] = array(
+    'title' => t('Calculate Age'),
+    'description' => 'Calculate person age.',
+    'page callback' => 'calculate_umur_ajax',
+    'access arguments' => array('access ikhwan core'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['sendtelegrammilad'] = array(
+    'title' => t('Send telegram milad'),
+    'description' => 'Send telegram milad.',
+    'page callback' => 'send_telegram_message_milad',
+    'access arguments' => array('access telegram bot'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['jualanpisb'] = array(
+    'title' => t('Pasaraya Ikhwan Sungai Buloh'),
+    'description' => 'Graph Jualan Pasaraya Ikhwan Sungai Buloh',
+    'page callback' => 'pisb_chart_dashboard',
+    'access arguments' => array('access pisb data'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['masterdata/zone/delete'] = array(
+    'title' => 'Delete Zon',
+    'description' => 'Chart example.',
+    'page callback' => 'delete_zone',
+    'access arguments' => array('admin ikhwan data zone'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['assigment_resit'] = array(
+    'title' => t('Get Assignment Resit File'),
+    'description' => 'Ajax function to retrieve assigment related file.',
+    'page callback' => 'get_file_data_from_assignment_id_ajax',
+    'access arguments' => array('access ikhwan data assignment'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['assigment_approval'] = array(
+    'title' => t('Approve or Deny Assignment'),
+    'description' => 'Ajax function to verify or deny assignment.',
+    'page callback' => 'verify_deny_assignment',
+    'access arguments' => array('verify or deny data assignment'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['assigment_update'] = array(
+    'title' => t('Update Data Assignment'),
+    'description' => 'Ajax function to update assignment.',
+    'page callback' => 'update_assignment',
+    'access arguments' => array('key in data assignment'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['insert_detail_zon'] = array(
+    'title' => t('Update Data Zon'),
+    'description' => 'function to update assignment.',
+    'page callback' => 'insert_detail_zon_data',
+    'access arguments' => array('admin ikhwan data zone'),
+    'type' => MENU_CALLBACK,
+    'weight' => 0,
+  );
+  $items['masterdata/zone/getajax'] = array(
+    'title' => t('Get data zon ajax'),
+    'description' => 'Get data zon ajax',
+    'page callback' => 'get_data_zon_ajax',
+    'access arguments' => array('access ikhwan data zone'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['masterdata/kawasan/getajax'] = array(
+    'title' => t('Get data kawasan ajax'),
+    'description' => 'Get data kawasan ajax',
+    'page callback' => 'get_data_kawasan_ajax',
+    'access arguments' => array('access ikhwan data zone'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * @return array
+ */
+function ikhwan_core_permission()
+{
+  return array(
+    'access ikhwan report core module' => array(
+      'title' => t('access ikhwan report'),
+      'description' => t('enable to get access for ikhwan report.'),
+    ),
+    'access ikhwan report import module' => array(
+      'title' => t('access ikhwan report import'),
+      'description' => t('enable to get access for ikhwan report import.'),
+    ),
+    'access ikhwan data zone' => array(
+      'title' => t('access ikhwan data zone'),
+      'description' => t('enable to get access for ikhwan data zone.'),
+    ),
+    'admin ikhwan data zone' => array(
+      'title' => t('admin ikhwan data zone'),
+      'description' => t('enable to manage ikhwan data zone.'),
+    ),
+    'access ikhwan jenis assignment' => array(
+      'title' => t('access ikhwan jenis assignment'),
+      'description' => t('enable to get access for ikhwan jenis assignment.'),
+    ),
+    'admin ikhwan jenis assignment' => array(
+      'title' => t('admin ikhwan jenis assignment'),
+      'description' => t('enable to manage ikhwan jenis assignment.'),
+    ),
+    'access ikhwan data assignment' => array(
+      'title' => t('access ikhwan data assignment'),
+      'description' => t('enable to get access for ikhwan data assignment.'),
+    ),
+    'admin ikhwan data assignment' => array(
+      'title' => t('admin ikhwan data assignment'),
+      'description' => t('enable to manage ikhwan data assignment.'),
+    ),
+    'access ikhwan user zone' => array(
+      'title' => t('access ikhwan user zone'),
+      'description' => t('enable to get access for ikhwan user zone.'),
+    ),
+    'admin ikhwan user zone' => array(
+      'title' => t('admin ikhwan user zone'),
+      'description' => t('enable to manage ikhwan user zone.'),
+    ),
+    'access ikhwan core' => array(
+      'title' => t('access ikhwan core'),
+      'description' => t('enable to get access for ikhwan core function.'),
+    ),
+    'access telegram bot' => array(
+      'title' => t('access telegram bot'),
+      'description' => t('enable to get access for telegram bot.'),
+    ),
+    'access pisb data' => array(
+      'title' => t('access pisb data'),
+      'description' => t('enable to get access for pisb data.'),
+    ),
+    'key in data assignment' => array(
+      'title' => t('Key In Data Assignment'),
+      'description' => t('enable to key in data assignment.'),
+    ),
+    'verify or deny data assignment' => array(
+      'title' => t('Verify or Deny Data Assignment'),
+      'description' => t('enable to verify or deny data assignment.'),
+    ),
+  );
+}
+require_once 'ikhwan_core.api.php.inc';
+require_once 'ikhwan_core.chart.inc';
+require_once 'attach_plugin.api.inc';
+/**
+ * @return string
+ */
+function ikhwanreport(){
+    return 'Ikhwan Report Core Module';
+}

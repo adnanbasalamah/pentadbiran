@@ -1,0 +1,8 @@
+name = Data Kawasan Module
+version = 7.01
+description = data kawasan for ikhwan report system.
+core = 7.x
+package = Keuangan Ikhwan
+dependencies[] = ikhwan_core
+files[] = data_kawasan.module
+files[] = data_kawasan.install

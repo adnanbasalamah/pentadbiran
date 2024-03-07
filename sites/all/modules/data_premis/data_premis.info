@@ -1,0 +1,8 @@
+name = Data Premis Module
+version = 7.01
+description = data premis for ikhwan report system.
+core = 7.x
+package = Keuangan Ikhwan
+dependencies[] = ikhwan_core
+files[] = data_premis.module
+files[] = data_premis.install

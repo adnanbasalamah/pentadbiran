@@ -1,0 +1,62 @@
+<?php
+header('Access-Control-Allow-Origin: *');
+/**
+ * @return mixed
+ */
+function angsuran_sewa_pajak_menu() {
+    $items['kewajiban'] = array(
+        'title' => 'Kewajiban Premis',
+        'type' => MENU_NORMAL_ITEM,
+        'menu_name' => 'main-menu',
+        'access arguments' => array('access kewajiban premis'),
+        'page callback' => 'kewajiban_premis',
+        'weight' => 8,
+    );
+    $items['kewajiban/main'] = array(
+        'title' => 'Kewajiban Premis',
+        'description' => 'Data kewajiban premis.',
+        'page callback' => 'kewajiban_premis',
+        'access arguments' => array('access kewajiban premis'),
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'weight' => 0,
+    );
+    $items['kewajiban/jenisalat'] = array(
+        'title' => 'Jenis Alat Premis',
+        'description' => 'Data jenis alat premis.',
+        'page callback' => 'table_jenis_alat_premis',
+        'access arguments' => array('admin master data kewajiban premis'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 1,
+    );
+    $items['kewajiban/formjenisalat'] = array(
+        'title' => 'Add Jenis Alat Premis',
+        'description' => 'Form add jenis alat premis.',
+        'page callback' => 'form_jenis_alat_premis',
+        'access arguments' => array('admin master data kewajiban premis'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 2,
+    );
+    return $items;
+}
+/**
+ * @return array
+ */
+function angsuran_sewa_pajak_permission() {
+    return array(
+        'access kewajiban premis' => array(
+            'title' => t('access data kewajiban premis'),
+            'description' => t('enable to get access for data kewajiban premis.'),
+        ),
+        'admin kewajiban premis' => array(
+            'title' => t('admin data kewajiban premis'),
+            'description' => t('enable to manage data kewajiban premis.'),
+        ),
+        'admin master data kewajiban premis' => array(
+            'title' => t('admin master data kewajiban premis'),
+            'description' => t('enable to manage master data kewajiban premis.'),
+        ),
+    );
+}
+require_once 'angsuran_sewa_pajak.api.inc';
+require_once 'angsuran_sewa_pajak.page.inc';
+require_once 'angsuran_sewa_pajak.form.inc';

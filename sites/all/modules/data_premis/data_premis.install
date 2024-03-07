@@ -1,0 +1,168 @@
+<?php
+/**
+ * @file
+ * Install file for data premis module.
+ */
+/**
+ * Implements hook_install().
+ * - Add the body field.
+ */
+
+function data_premis_install() {
+    drupal_set_message("Data Premis Module successfully installed");
+}
+function data_premis_uninstall() {
+    drupal_set_message("Data Premis successfully removed");
+}
+function data_premis_enable() {
+    drupal_set_message("Data Premis Module successfully enabled");
+}
+function data_premis_disable() {
+    drupal_set_message("Data Premis Module successfully disabled");
+}
+function data_premis_schema() {
+    require 'data_premis.schema.inc';
+    return $schema;
+}
+function data_premis_update_7001(){
+    $currency = array(
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+        'default' => 'IDR',
+        'description' => 'Currency for unit/premis',
+    );
+    $return = db_add_field( 'zdatapremis', 'currency', $currency);
+    return $return;
+}
+
+function data_premis_update_7002(){
+    $idnegeri = array(
+        'type' => 'varchar',
+        'length' => 30,
+        'not null' => TRUE,
+        'default' => 'Not Set',
+        'description' => 'ID Negeri fro unit/premis',
+    );
+    $return = db_add_field( 'zdatapremis', 'idnegeri', $idnegeri);
+    return $return;
+}
+
+function data_premis_update_7003(){
+    $return = array();
+    //$return[] = db_drop_field( 'zdatastaff', 'id_premis');
+    $schema['zdatapremis_staff'] = array(
+    		'description' => 'Stores information about data premis and staff connection.',
+    		'fields' => array(
+    			'id_premis' => array(
+    				'type' => 'varchar',
+    				'length' => 30,
+    				'not null' => TRUE,
+    				'default' => 'not set',
+    				'description' => 'Premis ID.',
+    			),
+    			'id_staff' => array(
+    				'type' => 'varchar',
+    				'length' => 30,
+    				'not null' => TRUE,
+    				'default' => 'not set',
+    				'description' => 'Staff ID.',
+    			),
+    			'uid' => array(
+    				'type' => 'int',
+    				'default' => 0,
+    				'description' => 'User ID that create the record.',
+    			),
+    			'uid_changed' => array(
+                    'type' => 'int',
+                    'default' => 0,
+                    'description' => 'Uid that changing the record.',
+                ),
+    			'created' => array(
+    				'type' => 'int',
+    				'default' => 0,
+    				'description' => 'The time that the row  was created, as a Unix timestamp.',
+    			),
+    			'changed' => array(
+    				'type' => 'int',
+    				'default' => 0,
+    				'description' => 'The time that the row  was updated, as a Unix timestamp.',
+    			),
+    		),
+    		'primary key' => array(
+    			'id_premis','id_staff',
+    		),
+    		'indexes' => array(
+                'uid_changed'   => array('uid_changed'),
+                'created'       => array('created'),
+                'changed'       => array('changed'),
+            ),
+            'foreign keys' => array(
+                'id_premis' => array(
+                    'table' => 'zdatapremis',
+                    'columns' => array('id_premis' => 'id'),
+                ),
+                'id_staff' => array(
+                    'table' => 'zdatastaff',
+                    'columns' => array('id_staff' => 'id'),
+                ),
+            ),
+    	);
+    	if (!db_table_exists('zdatapremis_staff')){
+    		$return[] = db_create_table('zdatapremis_staff', $schema['zdatapremis_staff']);
+    	}
+    $returnBol = true;
+    	foreach($return as $value){
+    		if ($value == false){
+    			$returnBol = $value;
+    		}
+    	}
+    return $returnBol;
+}
+
+function data_premis_update_7004(){
+    //$return[] = db_drop_field( 'zdatastaff', 'id_jawatan');
+    $IdJawatan = array(
+        'type' => 'int',
+        'default' => 2,
+        'description' => 'Id Jawatan Staff',
+    );
+    $return[] = db_add_field( 'zdatapremis_staff', 'id_jawatan', $IdJawatan);
+    $returnBol = true;
+    foreach($return as $value){
+        if ($value == false){
+            $returnBol = $value;
+        }
+    }
+    return $returnBol;
+}
+
+function data_premis_update_7005(){
+    $return[] = db_drop_field( 'zdatastaff', 'id_premis');
+    $return[] = db_drop_field( 'zdatastaff', 'id_jawatan');
+    $returnBol = true;
+    foreach($return as $value){
+        if ($value == false){
+            $returnBol = $value;
+        }
+    }
+    return $returnBol;
+}
+function data_premis_update_7006(){
+    $SektorPremis = array(
+        'type' => 'int',
+        'default' => 0,
+        'description' => 'Sektor Premis',
+    );
+    $return = db_add_field( 'zdatapremis', 'sektor_premis', $SektorPremis);
+    return $return;
+}
+function data_premis_update_7007(){
+  $ZoneId = array(
+    'type'        => 'int',
+    'size'        => 'big',
+    'description' => 'Zon ID',
+  );
+  $return = db_add_field( 'zdatapremis', 'id_zone', $ZoneId);
+  return $return;
+}

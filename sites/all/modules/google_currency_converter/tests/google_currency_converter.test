@@ -1,0 +1,96 @@
+<?php
+
+/**
+ * @file
+ * Test Google Currency converter block.
+ */
+
+/**
+ * Class GoogleCurrencyConverterTestCase.
+ */
+class GoogleCurrencyConverterTestCase extends DrupalWebTestCase {
+
+  /**
+   * SimpleTest declaration.
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Google Currency Converter',
+      'description' => 'Test Google Currency converter block and admin config form functionality.',
+      'group' => 'Google Currency Converter',
+    );
+  }
+
+  /**
+   * Set up the test environment.
+   */
+  public function setUp() {
+    parent::setUp(array('google_currency_converter'));
+    $admin_user = $this->drupalCreateUser(array(
+      'administer blocks',
+      'access administration pages',
+      'administer site configuration',
+    ));
+    $this->drupalLogin($admin_user);
+  }
+
+  /**
+   * Test that Google currency converter block can be placed and work.
+   */
+  public function testGoogleCurrencyConverterBlock() {
+    // Enable Google Currency converter block and place it in content region.
+    $block = array();
+    $block['blocks[google_currency_converter_google_currency_converter_block][region]'] = 'content';
+    $this->drupalPost('admin/structure/block/manage', $block, t('Save blocks'));
+
+    $this->drupalGet('');
+    $this->assertText('Google Currency Converter', 'Block was displayed on the front page.');
+
+    $edit = array();
+
+    // Test error message same currency.
+    $edit['google_currency_converter_from'] = 'AED';
+    $edit['google_currency_converter_to'] = 'AED';
+    $edit['amount'] = 100;
+    $this->drupalPost('', $edit, t('Convert'));
+    $this->assertText(t('Please select different currency both currency are same.'));
+
+    // Test error message empty amount.
+    $edit['google_currency_converter_to'] = 'AMD';
+    $edit['amount'] = '';
+    $this->drupalPost('', $edit, t('Convert'));
+    $this->assertText(t('Your Amount field is required.'));
+
+    // Test error message 0 amount.
+    $edit['amount'] = 0;
+    $this->drupalPost('', $edit, t('Convert'));
+    $this->assertText(t('Amount field must be greater then zero'));
+
+    // Test successful conversion.
+    $edit['amount'] = 100;
+    $this->drupalPost('', $edit, t('Convert'));
+    $result = google_currency_converter_helper(100, 'AED', 'AMD');
+    $this->assertText(t('Your selected value is from AED to AMD amount is 100 AED &amp; your converted value is @result AMD', array('@result' => $result)));
+  }
+
+  /**
+   * Test Google currency converter admin form.
+   */
+  public function testGoogleCurrencyConverterAdminForm() {
+    $edit = array();
+    $path = 'admin/config/regional/google-currency-converter';
+
+    // Test error message same currency.
+    $edit['google_currency_converter_from'] = 'AED';
+    $edit['google_currency_converter_to'] = 'AED';
+    $this->drupalPost($path, $edit, t('Save configuration'));
+    $this->assertText(t('Please select different currency both currency are same.'));
+
+    // Test functionality with 2 different currencies.
+    $edit['google_currency_converter_from'] = 'AED';
+    $edit['google_currency_converter_to'] = 'AMD';
+    $this->drupalPost($path, $edit, t('Save configuration'));
+    $this->assertText(t('The configuration options have been saved.'));
+  }
+
+}

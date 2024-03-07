@@ -1,0 +1,35 @@
+<?php
+header('Access-Control-Allow-Origin: *');
+/**
+ * @return mixed
+ */
+function properti_premis_menu() {
+    $items['datapremis/properti'] = array(
+        'title' => 'Data Properti Premis',
+        'type' => MENU_NORMAL_ITEM,
+        'menu_name' => 'main-menu',
+        'access arguments' => array('access properti premis'),
+        'page callback' => 'list_properti_premis',
+        'weight' => 8,
+    );
+    return $items;
+}
+/**
+ * @return array
+ */
+function properti_premis_permission() {
+    return array(
+        'access properti premis' => array(
+            'title' => t('access properti premis'),
+            'description' => t('enable to get access for properti premis.'),
+        ),
+        'admin properti premis' => array(
+            'title' => t('admin properti premis'),
+            'description' => t('enable to manage properti premis.'),
+        ),
+    );
+}
+
+function list_properti_premis(){
+    return 'TEST PROPERTI PREMIS';
+}

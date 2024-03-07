@@ -1,0 +1,79 @@
+<?php
+header('Access-Control-Allow-Origin: *');
+/**
+ * @return mixed
+ */
+function data_premis_menu() {
+    $items['masterdata/premis'] = array(
+        'title' => 'Data Premis',
+        'type' => MENU_NORMAL_ITEM,
+        'menu_name' => 'main-menu',
+        'access arguments' => array('access data premis'),
+        'page callback' => 'list_premis',
+        'weight' => 6,
+    );
+    $items['masterdata/premis/list'] = array(
+        'title' => 'List Data Premis',
+        'description' => 'List data premis.',
+        'page callback' => 'list_premis',
+        'access arguments' => array('access data premis'),
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'weight' => 0,
+    );
+    $items['masterdata/premis/add'] = array(
+        'title' => 'Form Data Premis',
+        'description' => 'Form data premis.',
+        'page callback' => 'form_add_premis',
+        'access arguments' => array('admin data premis'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 1,
+    );
+    $items['masterdata/premis/staff'] = array(
+        'title' => 'Form Data Staff Premis',
+        'description' => 'Form data staff premis.',
+        'page callback' => 'add_premis_staff',
+        'access arguments' => array('admin data premis'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 2,
+    );
+    $items['masterdata/premis/delete'] = array(
+        'title' => t('Delete data premis'),
+        'description' => 'Delete data premis.',
+        'page callback' => 'delete_premis_data',
+        'access arguments' => array('admin data premis'),
+        'type' => MENU_CALLBACK,
+        'weight' => 0,
+    );
+    $items['masterdata/premis/updatepremis'] = array(
+        'title' => t('Update data premis'),
+        'description' => 'Update data premis.',
+        'page callback' => 'update_premis_data',
+        'access arguments' => array('admin data premis'),
+        'type' => MENU_CALLBACK,
+        'weight' => 0,
+    );
+    $items['masterdata/premis/getajax'] = array(
+        'title' => t('Get data premis ajax'),
+        'description' => 'Get data premis ajax',
+        'page callback' => 'get_data_premis_by_zone_ajax',
+        'access arguments' => array('access data premis'),
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+/**
+ * @return array
+ */
+function data_premis_permission() {
+    return array(
+        'access data premis' => array(
+            'title' => t('access data premis'),
+            'description' => t('enable to get access for data premis.'),
+        ),
+        'admin data premis' => array(
+            'title' => t('admin data premis'),
+            'description' => t('enable to manage data premis.'),
+        ),
+    );
+}
+require_once 'data_premis.api.php.inc';

@@ -1,0 +1,126 @@
+<?php
+/**
+ * @file
+ * Install file for data overhead module.
+ */
+/**
+ * Implements hook_install().
+ * - Add the body field.
+ */
+
+function data_overhead_install() {
+    drupal_set_message("Data Overhead Module successfully installed");
+}
+function data_overhead_uninstall() {
+    drupal_set_message("Data Overhead successfully removed");
+    if (db_table_exists('zoverhead_premis')) {
+        db_drop_table('zoverhead_premis');
+    }
+}
+function data_overhead_enable() {
+    drupal_set_message("Data Overhead Module successfully enabled");
+}
+function data_overhead_disable() {
+    drupal_set_message("Data Overhead Module successfully disabled");
+}
+function data_overhead_schema() {
+    require 'data_overhead.schema.inc';
+    return $schema;
+}
+function data_overhead_update_7001(){
+    $overhead_entry = array(
+        'type' => 'varchar',
+        'length' => 500,
+        'not null' => TRUE,
+        'default' => '0',
+        'description' => 'Overhead value entry',
+    );
+    $return = db_add_field( 'zoverhead_staff', 'overhead_entry', $overhead_entry);
+    return $return;
+}
+function data_overhead_update_7002(){
+    $id_premis = array(
+        'type' => 'varchar',
+        'length' => 30,
+        'not null' => TRUE,
+        'default' => 'premis id',
+        'description' => 'premis id',
+    );
+    $return = db_add_field( 'zoverhead_staff', 'id_premis', $id_premis);
+    return $return;
+}
+function data_overhead_update_7003(){
+    $schema['zoverhead_premis'] = array(
+        'description' => 'Stores information about data overhead premis.',
+        'fields' => array(
+            'id_premis' => array(
+                'type' => 'varchar',
+                'length' => 30,
+                'not null' => TRUE,
+                'default' => 'id premis',
+                'description' => 'Related premis for overhead.',
+            ),
+            'id_overhead' => array(
+                'type' => 'varchar',
+                'length' => 30,
+                'not null' => TRUE,
+                'default' => 'id overhead',
+                'description' => 'Related overhead for premis.',
+            ),
+            'uid' => array(
+                'type' => 'int',
+                'default' => 0,
+                'description' => 'User ID that create the record.',
+            ),
+            'uid_changed' => array(
+                'type' => 'int',
+                'default' => 0,
+                'description' => 'User ID that changed the record.',
+            ),
+            'created' => array(
+                'type' => 'int',
+                'default' => 0,
+                'description' => 'The time that the row  was created, as a Unix timestamp.',
+            ),
+            'changed' => array(
+                'type' => 'int',
+                'default' => 0,
+                'description' => 'The time that the row  was updated, as a Unix timestamp.',
+            ),
+        ),
+        'primary key' => array(
+            'id_premis','id_overhead',
+        ),
+    );
+    if (!db_table_exists('zoverhead_premis')){
+        $return = db_create_table('zoverhead_premis', $schema['zoverhead_premis']);
+    }
+    return $return;
+}
+function data_overhead_update_7004(){
+    $weight = array(
+        'type' => 'int',
+        'default' => 0,
+        'description' => 'Weight of overhead category.',
+    );
+    $return = db_add_field( 'zoverhead_category', 'weight', $weight);
+    return $return;
+}
+function data_overhead_update_7005(){
+    $weight = array(
+        'type' => 'int',
+        'default' => 0,
+        'description' => 'Weight of overhead.',
+    );
+    $return = db_add_field( 'zoverhead', 'weight', $weight);
+    return $return;
+}
+function data_overhead_update_7006(){
+    $ohDescription = array(
+        'type' => 'text',
+        'size' => 'big',
+        'description' => 'Description of overhead.',
+    );
+    $return = db_add_field( 'zoverhead_staff', 'description', $ohDescription);
+    return $return;
+}

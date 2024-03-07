@@ -1,0 +1,69 @@
+<?php
+header('Access-Control-Allow-Origin: *');
+/**
+ * @return mixed
+ */
+function data_overhead_menu() {
+    $items['masterdata/overhead'] = array(
+        'title' => 'Master Data Overhead',
+        'type' => MENU_NORMAL_ITEM,
+        'menu_name' => 'main-menu',
+        'access arguments' => array('admin master data overhead'),
+        'page callback' => 'overhead_category',
+        'weight' => 7,
+    );
+    $items['masterdata/overhead/category'] = array(
+        'title' => 'Overhead Category',
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'menu_name' => 'main-menu',
+        'access arguments' => array('admin master data overhead'),
+        'page callback' => 'overhead_category',
+        'weight' => -1,
+    );
+    $items['masterdata/overhead/list'] = array(
+        'title' => 'List Data Overhead',
+        'description' => 'List data overhead.',
+        'page callback' => 'list_overhead',
+        'access arguments' => array('admin master data overhead'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 0,
+    );
+    /*$items['masterdata/overhead/add'] = array(
+        'title' => 'Form Data Overhead',
+        'description' => 'Form data overhead.',
+        'page callback' => 'form_add_overhead',
+        'access arguments' => array('admin master data overhead'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 1,
+    );*/
+    $items['masterdata/overhead_staff'] = array(
+        'title' => 'Form Data Overhead Staff',
+        'type' => MENU_NORMAL_ITEM,
+        'menu_name' => 'main-menu',
+        'access arguments' => array('admin data overhead'),
+        'page callback' => 'add_overhead_staff',
+        'description' => 'Form data staff overhead.',
+        'weight' => 8,
+    );
+    return $items;
+}
+/**
+ * @return array
+ */
+function data_overhead_permission() {
+    return array(
+        'access data overhead' => array(
+            'title' => t('access data overhead'),
+            'description' => t('enable to get access for data overhead.'),
+        ),
+        'admin data overhead' => array(
+            'title' => t('admin data overhead'),
+            'description' => t('enable to manage data overhead.'),
+        ),
+        'admin master data overhead' => array(
+            'title' => t('admin master data overhead'),
+            'description' => t('enable to manage master data overhead.'),
+        ),
+    );
+}
+require_once 'data_overhead.api.php.inc';
