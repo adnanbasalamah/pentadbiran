@@ -210,7 +210,7 @@ function list_premis($month = null, $year = null){
     if ($keuanganZone) {
         $userZone = get_user_zone();
     }
-    if (count($userZone) && isset($userZone[0])){
+    if (!empty($userZone) && isset($userZone[0])){
         $getDataZone = $userZone[1]['zone'];
         $dataPremis = get_data_premis_by_id($getDataZone);
     }else{
@@ -243,164 +243,166 @@ function list_premis($month = null, $year = null){
     $gtOverhead = 0;
     $gtOverheadHarian = 0;
     $totalKekurangan = 0;
-    for ($i = 0;$i < count($dataPremis);$i++){
+    if (!empty($dataPremis)) {
+      for ($i = 0; $i < count($dataPremis); $i++) {
         $detailPremis = $dataPremis[$i];
         if (isset($detailPremis->id) && !empty($detailPremis->id)) {
-            $dataStaff = get_data_staff_premis($detailPremis->id);
-            $relatedStaff = array();
-            $relatedStaff[] = 'UNIT';
-            for ($j = 0;$j < count($dataStaff);$j++){
-                $relatedStaff[] = $dataStaff[$j]->id;
-            }
-            $totalStaff = count($dataStaff);
-            if ($totalStaff > 0) {
-                $totalEntriedOH = db_query('SELECT COUNT(*) FROM {zoverhead_staff} WHERE id_premis = :id_premis', array(':id_premis' => $detailPremis->id))->fetchField();
-                $totalSumOH = db_query(
-                    'SELECT SUM(overhead_value) FROM {zoverhead_staff} WHERE id_premis = :id_premis
+          $dataStaff = get_data_staff_premis($detailPremis->id);
+          $relatedStaff = array();
+          $relatedStaff[] = 'UNIT';
+          for ($j = 0; $j < count($dataStaff); $j++) {
+            $relatedStaff[] = $dataStaff[$j]->id;
+          }
+          $totalStaff = count($dataStaff);
+          if ($totalStaff > 0) {
+            $totalEntriedOH = db_query('SELECT COUNT(*) FROM {zoverhead_staff} WHERE id_premis = :id_premis', array(':id_premis' => $detailPremis->id))->fetchField();
+            $totalSumOH = db_query(
+              'SELECT SUM(overhead_value) FROM {zoverhead_staff} WHERE id_premis = :id_premis
                     AND id_staff IN (:related_staff) AND id_overhead IN (:active_overhead)',
-                    array(
-                        ':id_premis' => $detailPremis->id,
-                        ':related_staff' => $relatedStaff,
-                        ':active_overhead' => $arrayOH,
-                    )
-                )->fetchField();
-                $totalHarianOH = round($totalSumOH / 30, 0);
-            }else{
-                $totalEntriedOH = 0;
-                $totalSumOH = 0;
-                $totalHarianOH = 0;
-            }
-            if ($totalEntriedOH < 2){
-                $badgesOH = '<span class="badge"><i class="fa fa-close" aria-hidden="true"></i></span>';
-            }else{
-                $badgesOH = '<span class="badge"><i class="fa fa-check" aria-hidden="true"></i></span>';
-            }
-            $premisData = array();
-            if (isset($namaZone[$detailPremis->id_zon])) {
-                $premisData[] = $namaZone[$detailPremis->id_zon];
-            } else {
-                $premisData[] = '-';
-            }
-            if (!empty($detailPremis->kawasan)){
-                $premisData[] = array(
-                    'data' => $detailPremis->kawasan,
-                    'class' => 'edit-kawasan',
-                    'id' => 'kawasan-'.$detailPremis->id_zon.'-'.$detailPremis->id,
-                );
-            }else{
-                $premisData[] = array(
-                    'data' => '-',
-                    'class' => 'edit-kawasan',
-                    'id' => 'kawasan-'.$detailPremis->id_zon.'-'.$detailPremis->id,
-                );
-            }
-            $premisData[] = $detailPremis->nama;
-            $premisData[] = $detailPremis->category_name;
-            $premisData[] = $detailPremis->currency;
-            if (isset($dataSetoran[$detailPremis->id])){
-                $setoranPremis = $dataSetoran[$detailPremis->id]->total_setoran;
-            }else{
-                $setoranPremis = 0;
-            }
-            if (isset($dataPengeluaran[$detailPremis->id])) {
-                $pengeluaranPremis = $dataPengeluaran[$detailPremis->id];
-            }else{
-                $pengeluaranPremis = 0;
-            }
-            $saldo = $setoranPremis - $pengeluaranPremis;
-            $totalSetoran = $totalSetoran + $setoranPremis;
-            $totalPengeluaran = $totalPengeluaran + $pengeluaranPremis;
-            $totalSaldo = $totalSaldo + $saldo;
-            $kekurangan = $totalSumOH - $pengeluaranPremis;
-            $totalKekurangan = $totalKekurangan + $kekurangan;
-            $premisData[] = '<div class="align-right">'.number_format($setoranPremis,0,$desOut,$separator).'</div>';
-            $premisData[] = '<div class="align-right">'.number_format($pengeluaranPremis,0,$desOut,$separator).'</div>';
-            $premisData[] = '<div class="align-right">'.number_format($saldo,0,$desOut,$separator).'</div>';
-            $premisData[] = '<div class="align-right">'.number_format($totalSumOH,0,$desOut,$separator).'</div>';
-            $premisData[] = '<div class="align-right">'.number_format($kekurangan,0,$desOut,$separator).'</div>';
-            $gtOverhead = $gtOverhead + $totalSumOH;
-            $premisData[] = '<div class="align-right">'.number_format($totalHarianOH,0,$desOut,$separator).'</div>';
-            $gtOverheadHarian = $gtOverheadHarian + $totalHarianOH;
-            $editIcon = '<i class="fa fa-edit"></i>';
-            $editButtonVar = array(
-                'element' => array(
-                    '#attributes' => array(
-                        'class' => array('btn-info', 'btn-xs', 'no-margin', 'edit-premis'),
-                        'id' => 'edit-premis-' . $detailPremis->id,
-                        'name' => 'edit-premis-' . $detailPremis->id,
-                        'onclick' => 'edit_premis(\'' . $detailPremis->id . '\')',
-                    ),
-                    '#button_type' => 'button',
-                    '#value' => $editIcon . ' EDIT',
-                )
+              array(
+                ':id_premis' => $detailPremis->id,
+                ':related_staff' => $relatedStaff,
+                ':active_overhead' => $arrayOH,
+              )
+            )->fetchField();
+            $totalHarianOH = round($totalSumOH / 30, 0);
+          } else {
+            $totalEntriedOH = 0;
+            $totalSumOH = 0;
+            $totalHarianOH = 0;
+          }
+          if ($totalEntriedOH < 2) {
+            $badgesOH = '<span class="badge"><i class="fa fa-close" aria-hidden="true"></i></span>';
+          } else {
+            $badgesOH = '<span class="badge"><i class="fa fa-check" aria-hidden="true"></i></span>';
+          }
+          $premisData = array();
+          if (isset($namaZone[$detailPremis->id_zon])) {
+            $premisData[] = $namaZone[$detailPremis->id_zon];
+          } else {
+            $premisData[] = '-';
+          }
+          if (!empty($detailPremis->kawasan)) {
+            $premisData[] = array(
+              'data' => $detailPremis->kawasan,
+              'class' => 'edit-kawasan',
+              'id' => 'kawasan-' . $detailPremis->id_zon . '-' . $detailPremis->id,
             );
-            $editButton = theme('button', $editButtonVar);
-            $premisData[] = $editButton;
-            $addIcon = '<i class="fa fa-plus"></i>';
-            $staffButtonVar = array(
-                'element' => array(
-                    '#attributes' => array(
-                        'class' => array('btn-success', 'btn-xs', 'no-margin', 'add-staff'),
-                        'id' => 'add-staff-' . $detailPremis->id,
-                        'name' => 'add-staff-' . $detailPremis->id,
-                        'onclick' => 'manage_staff(\'' . $detailPremis->id . '\')',
-                    ),
-                    '#button_type' => 'button',
-                    '#value' => $addIcon . ' ADD STAFF&nbsp;&nbsp;&nbsp;&nbsp;<span class="badge">' . $totalStaff . '</span>',
-                )
+          } else {
+            $premisData[] = array(
+              'data' => '-',
+              'class' => 'edit-kawasan',
+              'id' => 'kawasan-' . $detailPremis->id_zon . '-' . $detailPremis->id,
             );
-            $staffButton = theme('button', $staffButtonVar);
-            $premisData[] = $staffButton;
-            $ohButtonVar = array(
-                'element' => array(
-                    '#attributes' => array(
-                        'class' => array('btn-warning', 'btn-xs', 'no-margin', 'add-oh'),
-                        'id' => 'add-oh-' . $detailPremis->id,
-                        'name' => 'add-oh-' . $detailPremis->id,
-                        'onclick' => 'overhead_premis(\'' . $detailPremis->id . '\')',
-                    ),
-                    '#button_type' => 'button',
-                    '#value' => $addIcon . ' OVERHEAD&nbsp;&nbsp;'.$badgesOH,
-                )
-            );
-            $ohButton = theme('button', $ohButtonVar);
-            $premisData[] = $ohButton;
-            $setoranButtonVar = array(
-                'element' => array(
-                    '#attributes' => array(
-                        'class' => array('btn-primary', 'btn-xs', 'no-margin', 'add-oh'),
-                        'id' => 'add-setoran-' . $detailPremis->id,
-                        'name' => 'add-setoran-' . $detailPremis->id,
-                        'onclick' => 'setoran_premis(\'' . $detailPremis->id . '\','.$month.','.$year.')',
-                    ),
-                    '#button_type' => 'button',
-                    '#value' => $addIcon . ' '.t('SETORAN').'&nbsp;&nbsp;',
-                )
-            );
-            $setoranButton = theme('button', $setoranButtonVar);
-            $premisData[] = $setoranButton;
-            $delIcon = '<i class="fa fa-trash-o"></i>';
-            $delButtonVar = array(
-                'element' => array(
-                    '#attributes' => array(
-                        'class' => array('btn-danger', 'btn-xs', 'no-margin', 'del-premis'),
-                        'id' => 'del-premis-' . $detailPremis->id,
-                        'name' => 'del-premis-' . $detailPremis->id,
-                        'onclick' => 'delete_premis(\'' . $detailPremis->id . '\')',
-                    ),
-                    '#button_type' => 'button',
-                    '#value' => $delIcon . ' HAPUS',
-                )
-            );
-            if ($totalStaff <= 0) {
-                $delButton = theme('button', $delButtonVar);
-            } else {
-                $delButton = '';
-            }
+          }
+          $premisData[] = $detailPremis->nama;
+          $premisData[] = $detailPremis->category_name;
+          $premisData[] = $detailPremis->currency;
+          if (isset($dataSetoran[$detailPremis->id])) {
+            $setoranPremis = $dataSetoran[$detailPremis->id]->total_setoran;
+          } else {
+            $setoranPremis = 0;
+          }
+          if (isset($dataPengeluaran[$detailPremis->id])) {
+            $pengeluaranPremis = $dataPengeluaran[$detailPremis->id];
+          } else {
+            $pengeluaranPremis = 0;
+          }
+          $saldo = $setoranPremis - $pengeluaranPremis;
+          $totalSetoran = $totalSetoran + $setoranPremis;
+          $totalPengeluaran = $totalPengeluaran + $pengeluaranPremis;
+          $totalSaldo = $totalSaldo + $saldo;
+          $kekurangan = $totalSumOH - $pengeluaranPremis;
+          $totalKekurangan = $totalKekurangan + $kekurangan;
+          $premisData[] = '<div class="align-right">' . number_format($setoranPremis, 0, $desOut, $separator) . '</div>';
+          $premisData[] = '<div class="align-right">' . number_format($pengeluaranPremis, 0, $desOut, $separator) . '</div>';
+          $premisData[] = '<div class="align-right">' . number_format($saldo, 0, $desOut, $separator) . '</div>';
+          $premisData[] = '<div class="align-right">' . number_format($totalSumOH, 0, $desOut, $separator) . '</div>';
+          $premisData[] = '<div class="align-right">' . number_format($kekurangan, 0, $desOut, $separator) . '</div>';
+          $gtOverhead = $gtOverhead + $totalSumOH;
+          $premisData[] = '<div class="align-right">' . number_format($totalHarianOH, 0, $desOut, $separator) . '</div>';
+          $gtOverheadHarian = $gtOverheadHarian + $totalHarianOH;
+          $editIcon = '<i class="fa fa-edit"></i>';
+          $editButtonVar = array(
+            'element' => array(
+              '#attributes' => array(
+                'class' => array('btn-info', 'btn-xs', 'no-margin', 'edit-premis'),
+                'id' => 'edit-premis-' . $detailPremis->id,
+                'name' => 'edit-premis-' . $detailPremis->id,
+                'onclick' => 'edit_premis(\'' . $detailPremis->id . '\')',
+              ),
+              '#button_type' => 'button',
+              '#value' => $editIcon . ' EDIT',
+            )
+          );
+          $editButton = theme('button', $editButtonVar);
+          $premisData[] = $editButton;
+          $addIcon = '<i class="fa fa-plus"></i>';
+          $staffButtonVar = array(
+            'element' => array(
+              '#attributes' => array(
+                'class' => array('btn-success', 'btn-xs', 'no-margin', 'add-staff'),
+                'id' => 'add-staff-' . $detailPremis->id,
+                'name' => 'add-staff-' . $detailPremis->id,
+                'onclick' => 'manage_staff(\'' . $detailPremis->id . '\')',
+              ),
+              '#button_type' => 'button',
+              '#value' => $addIcon . ' ADD STAFF&nbsp;&nbsp;&nbsp;&nbsp;<span class="badge">' . $totalStaff . '</span>',
+            )
+          );
+          $staffButton = theme('button', $staffButtonVar);
+          $premisData[] = $staffButton;
+          $ohButtonVar = array(
+            'element' => array(
+              '#attributes' => array(
+                'class' => array('btn-warning', 'btn-xs', 'no-margin', 'add-oh'),
+                'id' => 'add-oh-' . $detailPremis->id,
+                'name' => 'add-oh-' . $detailPremis->id,
+                'onclick' => 'overhead_premis(\'' . $detailPremis->id . '\')',
+              ),
+              '#button_type' => 'button',
+              '#value' => $addIcon . ' OVERHEAD&nbsp;&nbsp;' . $badgesOH,
+            )
+          );
+          $ohButton = theme('button', $ohButtonVar);
+          $premisData[] = $ohButton;
+          $setoranButtonVar = array(
+            'element' => array(
+              '#attributes' => array(
+                'class' => array('btn-primary', 'btn-xs', 'no-margin', 'add-oh'),
+                'id' => 'add-setoran-' . $detailPremis->id,
+                'name' => 'add-setoran-' . $detailPremis->id,
+                'onclick' => 'setoran_premis(\'' . $detailPremis->id . '\',' . $month . ',' . $year . ')',
+              ),
+              '#button_type' => 'button',
+              '#value' => $addIcon . ' ' . t('SETORAN') . '&nbsp;&nbsp;',
+            )
+          );
+          $setoranButton = theme('button', $setoranButtonVar);
+          $premisData[] = $setoranButton;
+          $delIcon = '<i class="fa fa-trash-o"></i>';
+          $delButtonVar = array(
+            'element' => array(
+              '#attributes' => array(
+                'class' => array('btn-danger', 'btn-xs', 'no-margin', 'del-premis'),
+                'id' => 'del-premis-' . $detailPremis->id,
+                'name' => 'del-premis-' . $detailPremis->id,
+                'onclick' => 'delete_premis(\'' . $detailPremis->id . '\')',
+              ),
+              '#button_type' => 'button',
+              '#value' => $delIcon . ' HAPUS',
+            )
+          );
+          if ($totalStaff <= 0) {
+            $delButton = theme('button', $delButtonVar);
+          } else {
+            $delButton = '';
+          }
 
-            $premisData[] = $delButton;
-            $rows[] = $premisData;
+          $premisData[] = $delButton;
+          $rows[] = $premisData;
         }
+      }
     }
     $footer[] = array(
         array(
@@ -481,6 +483,7 @@ function form_add_premis($idPremis = null)
   $getDataPremis = null;
   if (!empty($idPremis)) {
     $getDataPremis = get_data_premis_by_id(null, $idPremis);
+    $variables = $getDataPremis[0];
   }
   if (empty($getDataPremis)) {
     $getDataPremis = new stdClass();
@@ -496,8 +499,8 @@ function form_add_premis($idPremis = null)
     $getDataPremis->bbm = '';
     $getDataPremis->telegram = '';
     $getDataPremis->email = '';
+    $variables = $getDataPremis;
   }
-  $variables = $getDataPremis;
   $form = drupal_get_form('form_data_premis', $variables);
   $formPremis = drupal_render($form);
   return $formPremis;
@@ -580,7 +583,7 @@ function get_data_premis_by_id($zone = null, $idpremis = null, $idkawasan = null
         ),
       ),
     );
-    $dataPremis = getTableDataByField('master_data_premis', 'access data premis', $fieldArray, null, null, null, $leftJoinArray, $conditionArray);
+    $dataPremis = getTableDataByField('master_data_premis', 'access data ajax premis', $fieldArray, null, null, null, $leftJoinArray, $conditionArray);
     $dataReturn = $dataPremis;
   } else {
     $fieldArray = array(
@@ -651,7 +654,7 @@ function get_data_premis_by_id($zone = null, $idpremis = null, $idkawasan = null
       }
       $conditionArray[] = $consData;
     }
-    $dataPremis = getTableDataByField('master_data_premis', 'access data premis', $fieldArray, 'ta.nama', null, null, $leftJoinArray,$conditionArray);
+    $dataPremis = getTableDataByField('master_data_premis', 'access data ajax premis', $fieldArray, 'ta.nama', null, null, $leftJoinArray,$conditionArray);
     if (!empty($dataPremis)) {
       $dataReturn = $dataPremis;
     }
@@ -857,7 +860,7 @@ function form_data_premis_submit($form, &$form_state)
     'id', 'nama', 'related_uid', 'zone',
     'id_premis', 'uid', 'uid_changed', 'created', 'changed'
   );
-  $userZonePremis = getTableDataByField(
+  /*$userZonePremis = getTableDataByField(
     'zuser_zone', 'admin data premis',
     $fieldArray, 'nama', 'related_uid', $user->uid
   );
@@ -872,7 +875,7 @@ function form_data_premis_submit($form, &$form_state)
     $userPremisUpdate['uid_changed'] = $user->uid;
     $userPremisUpdate['changed'] = time();
     saveTableData('zuser_zone', 'admin data premis', $userPremisUpdate, 'id', $userPremisUpdate['id']);
-  }
+  }*/
   return $returnData;
 }
 function get_data_staff_premis($idPremis = null, $idStaff = null, $whereClause = null, $orderBy = 'ta.id_premis', $rangeData = null, $telegram_bot = false)
@@ -989,7 +992,7 @@ function create_staff_premis_row($idpremis = null)
   if (!empty($idpremis)) {
     $dataStaff = get_data_staff_premis($idpremis);
   }
-  if (!is_null($dataStaff) && count($dataStaff)) {
+  if (!empty($dataStaff)) {
     $nextCounter = 1;
     for ($i = 0; $i < count($dataStaff); $i++) {
       $IdStaff = $dataStaff[$i]->id_staff;
@@ -1039,6 +1042,7 @@ function create_staff_premis_row($idpremis = null)
         '#suffix' => '<input type="checkbox" id="checkdel-' . $nextCounter . '-' . $idpremis . '" value="1" class="checkdel">',
       );
       $tableRow['r' . ($i + 1)] = $colData;
+      $nextCounter++;
     }
     $nextCounter = $i + 1;
     for ($i = 0; $i < 3; $i++) {
@@ -1400,15 +1404,17 @@ function delete_premis_data($idPremis = null)
   }
   return $deletedData;
 }
-function get_data_premis_by_zone_ajax(){
-    $zone = $_REQUEST['id_zon'];
-    $dataPremis = get_data_premis_by_id($zone);
-    $arrPremis = array();
-    for ($i = 0;$i < count($dataPremis);$i++){
-        $arrPremis[$dataPremis[$i]->id] = $dataPremis[$i]->nama;
-    }
-    print json_encode($arrPremis);
-    exit();
+function get_data_premis_by_zone_ajax()
+{
+  $zone = $_REQUEST['id_zon'];
+  $dataPremis = get_data_premis_by_id($zone);
+  $arrPremis = array();
+  for ($i = 0; $i < count($dataPremis); $i++) {
+    $arrPremis[$dataPremis[$i]->id] = $dataPremis[$i]->nama;
+  }
+  header('Access-Control-Allow-Origin: *');
+  print json_encode($arrPremis);
+  exit();
 }
 function update_premis_data(){
     if (isset($_REQUEST['id']) && isset($_REQUEST['value'])){

@@ -993,7 +993,7 @@ function get_total_pengeluaran_oh_by_premis($month = null, $year = null, $idPrem
     $dataPengeluaranOhPremis = null;
     if ($month !== null && $year !== null){
         $dataPremis = get_data_premis_by_id($idPremis);
-        if (count($dataPremis)){
+        if (!empty($dataPremis)){
             if (empty($idPremis)) {
                 $dataPengeluaranOhPremis = array();
                 for ($i = 0; $i < count($dataPremis); $i++) {

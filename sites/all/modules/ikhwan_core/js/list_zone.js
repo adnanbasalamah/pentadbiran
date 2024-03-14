@@ -1,27 +1,23 @@
 function entry_pemasukan(zoneCode, month, year){
-    window.location = Drupal.settings.basePath + 'pemasukanpengeluaran/'+ zoneCode +'/'+ month +'/'+ year;
+    window.location = Drupal.settings.basePath + "pemasukanpengeluaran/"+ zoneCode +"/"+ month +"/"+ year;
+}
+function edit_zon(zonId){
+  if (zonId !== "" && zonId !== 0){
+    window.location = Drupal.settings.basePath + "masterdata/zone/add/" + zonId;
+  }
+}
+
+function delete_zon(zonId){
+  if (zonId !== "" && zonId !== 0){
+    var Konfirmasi = confirm("Yakin menghapus zone ini???");
+    if (Konfirmasi) {
+      window.location = Drupal.settings.basePath + "masterdata/zone/delete/" + zonId;
+    }
+  }
 }
 jQuery(function ($) {
-    $('.edit-zone').on('click', function (e){
-        e.preventDefault();
-        var splitID = $(this).attr('id').split('-');
-        if (splitID.length > 0 && typeof splitID[2] != 'undefined'){
-            window.location = Drupal.settings.basePath + 'masterdata/zone/add/'+ splitID[2];
-        }
-    });
-  $('.delete-zone').on('click', function (e){
+  $("#new-zone").on("click", function (e) {
     e.preventDefault();
-    var Konfirmasi = confirm('Yakin menghapus zone ini???');
-    if (Konfirmasi) {
-      var splitID = $(this).attr('id').split('-');
-      if (splitID.length > 0 && typeof splitID[2] != 'undefined') {
-        alert(splitID[2]);
-        window.location = Drupal.settings.basePath + 'masterdata/zone/delete/' + splitID[2];
-      }
-    }
+    window.location = Drupal.settings.basePath + "masterdata/zone/add";
   });
-    $('#new-zone').on('click', function (e){
-        e.preventDefault();
-        window.location = Drupal.settings.basePath + 'masterdata/zone/add';
-    });
-})
+});

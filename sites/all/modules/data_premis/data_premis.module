@@ -56,7 +56,7 @@ function data_premis_menu() {
         'title' => t('Get data premis ajax'),
         'description' => 'Get data premis ajax',
         'page callback' => 'get_data_premis_by_zone_ajax',
-        'access arguments' => array('access data premis'),
+        'access arguments' => array('access data ajax premis'),
         'type' => MENU_CALLBACK,
     );
     return $items;
@@ -64,16 +64,21 @@ function data_premis_menu() {
 /**
  * @return array
  */
-function data_premis_permission() {
-    return array(
-        'access data premis' => array(
-            'title' => t('access data premis'),
-            'description' => t('enable to get access for data premis.'),
-        ),
-        'admin data premis' => array(
-            'title' => t('admin data premis'),
-            'description' => t('enable to manage data premis.'),
-        ),
-    );
+function data_premis_permission()
+{
+  return array(
+    'access data premis' => array(
+      'title' => t('access data premis'),
+      'description' => t('enable to get access for data premis.'),
+    ),
+    'admin data premis' => array(
+      'title' => t('admin data premis'),
+      'description' => t('enable to manage data premis.'),
+    ),
+    'access data ajax premis' => array(
+      'title' => t('access data ajax premis'),
+      'description' => t('enable to access data ajax premis.'),
+    ),
+  );
 }
 require_once 'data_premis.api.php.inc';

@@ -1602,3 +1602,25 @@ function cash_flow_pisb_chart_options($cashflowData = null, $seriesColor = null)
     }
     return $options;
 }
+
+function dashboard_pentadbiran(){
+  $chart = array(
+    '#type' => 'chart',
+    '#chart_type' => 'line',
+    '#chart_library' => 'highcharts', // Allowed values: 'google' or 'highcharts'
+    '#title' => t('Simple Column Chart'),
+  );
+  $chart['female'] = array(
+    '#type' => 'chart_data',
+    '#title' => t('Female'),
+    '#data' => array(12, 22, 32),
+    '#suffix' => 'lbs',
+  );
+  $chart['xaxis'] = array(
+    '#type' => 'chart_xaxis',
+    '#labels' => array('Jan', 'Feb', 'Mar'),
+  );
+  $example['chart'] = $chart;
+
+  return drupal_render($example);
+}

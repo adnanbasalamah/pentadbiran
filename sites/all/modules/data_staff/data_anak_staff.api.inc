@@ -31,7 +31,7 @@ function create_anak_staff_row($IdIbu = null){
     if ($keuanganZone) {
         $userZone = get_user_zone();
     }
-    if ($userZone[0]){
+    if (isset($userZone[0])){
         $dataPremis = get_data_premis_by_id();
         $optionPremis = array();
         $optionPremis['0'] = '-';
@@ -239,31 +239,36 @@ function create_anak_staff_row($IdIbu = null){
     }
     return $tableRow;
 }
-function premis_anak_staff_form($form, &$form_state, $variables = null){
-    if (isset($variables['id_ibu']) && !empty($variables['id_ibu'])){
-        $tableHeader = create_anak_staff_header();
-        $dataIbu = get_data_staff(null, false, $variables['id_ibu']);
-        $dataAyah = get_data_staff(null, false, $dataIbu->id_suami);
-        $tableRow = create_anak_staff_row($variables['id_ibu']);
-        $tableFooter = array(create_anak_staff_header());
-        $form['basic'] = array(
-            '#type' => 'fieldset',
-            '#title' => 'DATA ANAK STAFF '.$dataIbu->nama_lengkap.', AYAH : '.$dataAyah->nama_lengkap,
-            '#collapsible' => FALSE, // Added
-            '#collapsed' => FALSE,  // Added
-        );
-        $form['basic']['table'] = array(
-            '#theme' => 'formtable_form_table',
-            '#header' => $tableHeader,
-            'rows' => $tableRow,
-            '#footer' => $tableFooter,
-        );
-        $form['basic']['submit'] = array(
-            '#type' => 'submit',
-            '#value' => t('SAVE DATA ANAK'),
-        );
-    }
-    return $form;
+function premis_anak_staff_form($form, &$form_state, $variables = null)
+{
+  if (isset($variables['id_ibu']) && !empty($variables['id_ibu'])) {
+    $tableHeader = create_anak_staff_header();
+    $dataIbu = get_data_staff_only_by_id(null, false, $variables['id_ibu']);
+    $dataAyah = get_data_staff_only_by_id(null, false, $dataIbu[0]->id_suami);
+    $tableRow = create_anak_staff_row($variables['id_ibu']);
+    $tableFooter = array(create_anak_staff_header());
+    $form['id_zon_ibu'] = array(
+      '#type' => 'hidden',
+      '#default_value' => $dataIbu[0]->id_zon,
+    );
+    $form['basic'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'DATA ANAK STAFF ' . $dataIbu[0]->nama_lengkap . ', AYAH : ' . $dataAyah[0]->nama_lengkap,
+      '#collapsible' => FALSE, // Added
+      '#collapsed' => FALSE,  // Added
+    );
+    $form['basic']['table'] = array(
+      '#theme' => 'formtable_form_table',
+      '#header' => $tableHeader,
+      'rows' => $tableRow,
+      '#footer' => $tableFooter,
+    );
+    $form['basic']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('SAVE DATA ANAK'),
+    );
+  }
+  return $form;
 }
 function add_anak_staff($IdIbu = null){
     $core_module_path = drupal_get_path('module','ikhwan_core');
@@ -292,6 +297,7 @@ function premis_anak_staff_form_submit($form, &$form_state)
 {
   global $user;
   db_set_active('master');
+  $id_zon_ibu = isset($form_state['values']['id_zon_ibu']) ? $form_state['values']['id_zon_ibu'] : 0;
   if (isset($form_state['values']['rows'])) {
     $values = $form_state['values']['rows'];
   } else {
@@ -356,17 +362,19 @@ function premis_anak_staff_form_submit($form, &$form_state)
                 $SavedData, 'id_number', $SavedData['id_number']
               );
             } else {
+              $SavedData['id_zon'] = $id_zon_ibu;
               $DataStaffDetail = saveTableData(
                 'master_data_staff', 'admin data staff',
-                $SavedData
+                $SavedData, null, null
               );
             }
             drupal_set_message('Data anak bernama : ' . $SavedData['nama_lengkap'] . ' berhasil diupdate');
           } else {
             unset($SavedData['id_number']);
+            $SavedData['id_zon'] = $id_zon_ibu;
             $DataStaff = saveTableData(
               'master_data_staff', 'admin data staff',
-              $SavedData
+              $SavedData,null,null,false
             );
             drupal_set_message('Penambahan data anak bernama : ' . $SavedData['nama_lengkap'] . ' berhasil');
           }

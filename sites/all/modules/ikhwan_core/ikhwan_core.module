@@ -216,6 +216,13 @@ function ikhwan_core_menu()
     'access arguments' => array('access ikhwan data zone'),
     'type' => MENU_CALLBACK,
   );
+  $items['masterdata/zon/jsonp'] = array(
+    'title' => t('Get jsonp of zon for datatables'),
+    'description' => 'Get jsonp of zon for datatables',
+    'page callback' => 'get_zons_record',
+    'access arguments' => array('access ikhwan data zone'),
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -290,6 +297,7 @@ function ikhwan_core_permission()
 require_once 'ikhwan_core.api.php.inc';
 require_once 'ikhwan_core.chart.inc';
 require_once 'attach_plugin.api.inc';
+require_once 'datatable_json_source.inc';
 /**
  * @return string
  */

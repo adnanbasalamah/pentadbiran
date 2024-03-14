@@ -79,11 +79,13 @@ function list_kawasan(){
     $kawasanData[] = $dataKawasan[$i]->kawasan;
     $dataPremis = get_data_premis_by_id(null, null, $dataKawasan[$i]->id_kawasan);
     $premisList = '';
-    for ($j = 0;$j < count($dataPremis);$j++){
-      if ($premisList == ''){
-        $premisList .= $dataPremis[$j]->nama;
-      }else {
-        $premisList .= ', ' . $dataPremis[$j]->nama;
+    if (!empty($dataPremis)) {
+      for ($j = 0; $j < count($dataPremis); $j++) {
+        if ($premisList == '') {
+          $premisList .= $dataPremis[$j]->nama;
+        } else {
+          $premisList .= ', ' . $dataPremis[$j]->nama;
+        }
       }
     }
     $kawasanData[] = $premisList;
@@ -116,7 +118,7 @@ function list_kawasan(){
           '#value' => $delIcon . ' HAPUS',
         )
       );
-      if (count($dataPremis) <= 0) {
+      if (empty($dataPremis)) {
         $delButton = theme('button', $delButtonVar);
       } else {
         $delButton = '';

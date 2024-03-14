@@ -306,3 +306,58 @@ body.light-skin .hpanel .panel-heading {
     padding-right: 10px !important;
   }
 }
+.hpanel .card {
+  border-radius: 6px;
+  box-shadow: 0 2px 2px rgba(204,197,185,.5);
+  background-color: #fff;
+  color: #252422;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+  border: none;
+}
+.hpanel .card .card-body {
+  padding: 15px 15px 10px;
+}
+.hpanel .card-body {
+  -webkit-box-flex: 1;
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+  padding: 1.25rem;
+}
+.hpanel .card .icon-big {
+  font-size: 4.3em;
+  min-height: 64px;
+}
+.hpanel .card .icon-small{
+  font-size: 2em;
+  min-height: 32px;
+}
+.hpanel .icon-warning {
+  color: #f3bb45;
+}
+.hpanel .card .numbers {
+  font-size: 1.82em;
+  text-align: right;
+}
+.icon-info {
+  color: #68b3c8;
+}
+.icon-danger {
+  color: #eb5e28;
+}
+.icon-success {
+  color: #41b883;
+}
+.btn-disabled{
+  background: #efefff !important;
+}
+.list-group-item{
+  padding: 4px 8px !important;
+  margin-bottom: -1px !important;
+  background-color: #fff !important;
+  border: 1px solid #ddd !important;
+}
+.list-zon.list-group{
+  width: 220px !important;
+}

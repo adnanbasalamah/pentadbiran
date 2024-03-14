@@ -66,122 +66,128 @@ function set_default_time_zone(){
  *
  * @return $this|null|\SelectQuery|\SelectQueryInterface
  */
-function getTableDataByField($tableName = null, $userAccess = null, $fieldArray = null, $fieldOrder = null, $fieldCondition = null, $fieldConditionValue = null, $leftJoinArray = null, $conditionArray = null, $range = null, $whereClause = null, $AddExpression = null){
-    $query = null;
-    if (!is_null($tableName) && !is_null($fieldArray) && !is_null($userAccess)){
-        if (user_access($userAccess)) {
-            $strField = implode(',', $fieldArray);
-            $query = db_select($tableName,'ta');
-            if ($leftJoinArray !== null && count($leftJoinArray)){
-                for ($i = 0;$i < count($leftJoinArray);$i++){
-                    $leftJoinData = $leftJoinArray[$i];
-                    if (isset($leftJoinData['sourcealias'])){
-                        $query->leftJoin($leftJoinData['tablename'], $leftJoinData['tablealias'], $leftJoinData['sourcealias'].'.'.$leftJoinData['field_join'].' = '.$leftJoinData['tablealias'].'.'.$leftJoinData['field_source']);
-                    }else{
-                        $query->leftJoin($leftJoinData['tablename'], $leftJoinData['tablealias'], 'ta.'.$leftJoinData['field_join'].' = '.$leftJoinData['tablealias'].'.'.$leftJoinData['field_source']);
-                    }
-                }
-            }
-            $query = $query->fields('ta', $fieldArray);
-            if (!is_null($leftJoinArray) && count($leftJoinArray)){
-                for ($i = 0;$i < count($leftJoinArray);$i++){
-                    $leftJoinData = $leftJoinArray[$i];
-                    $query = $query->fields($leftJoinData['tablealias'], $leftJoinData['fieldArray']);
-                }
-            }
-            if (!is_null($fieldOrder)){
-                if (!is_array($fieldOrder)){
-                    $explodeFieldOrder = explode('.', $fieldOrder);
-                    if (count($explodeFieldOrder)){
-                        $query = $query->orderBy($fieldOrder);
-                    }else{
-                        $query = $query->orderBy('ta.'.$fieldOrder);
-                    }
-                }else{
-                    for ($i = 0;$i < count($fieldOrder);$i++){
-                        if (isset($fieldOrder[$i]['operator'])){
-                            $explodeFieldOrder = explode('.', $fieldOrder[$i]['fieldname']);
-                            if (count($explodeFieldOrder)){
-                                $query = $query->orderBy($fieldOrder[$i]['fieldname'], $fieldOrder[$i]['operator']);
-                            }else{
-                                $query = $query->orderBy('ta.'.$fieldOrder[$i]['fieldname'], $fieldOrder[$i]['operator']);
-                            }
-                        }else{
-                            $explodeFieldOrder = explode('.', $fieldOrder[$i]['fieldname']);
-                            if (count($explodeFieldOrder)){
-                                $query = $query->orderBy($fieldOrder[$i]['fieldname']);
-                            }else{
-                                $query = $query->orderBy('ta.'.$fieldOrder[$i]['fieldname']);
-                            }
-                        }
-                    }
-                }
-            }
-            if (!is_null($fieldCondition) && !is_null($fieldConditionValue)){
-                $query = $query->condition('ta.'.$fieldCondition, $fieldConditionValue);
-            }
-            if (!is_null($conditionArray) && count($conditionArray)){
-                $db_or = db_or();
-                $db_and = db_and();
-                for ($i = 0;$i < count($conditionArray);$i++){
-                    if (isset($conditionArray[$i]->connector)){
-                        if ($conditionArray[$i]->connector == 'OR'){
-                            $conditionField = $conditionArray[$i]->fieldName;
-                            $conditionValue = $conditionArray[$i]->value;
-                            if (isset($conditionArray[$i]->operator) && !empty($conditionArray[$i]->operator)){
-                                $conditionOperator = $conditionArray[$i]->operator;
-                            }else{
-                                $conditionOperator = '=';
-                            }
-                            $db_or->condition($conditionField, $conditionValue,$conditionOperator);
-                            $query = $query->condition($db_or);
-                        }else{
-                            $conditionField = $conditionArray[$i]->fieldName;
-                            $conditionValue = $conditionArray[$i]->value;
-                            if (isset($conditionArray[$i]->operator) && !empty($conditionArray[$i]->operator)){
-                                $conditionOperator = $conditionArray[$i]->operator;
-                            }else{
-                                $conditionOperator = '=';
-                            }
-                            $db_and->condition($conditionField, $conditionValue,$conditionOperator);
-                            $query = $query->condition($db_and);
-                        }
-                    }else{
-                        $conditionField = $conditionArray[$i]->fieldName;
-                        $conditionValue = $conditionArray[$i]->value;
-                        if (isset($conditionArray[$i]->operator) && !empty($conditionArray[$i]->operator)){
-                            $conditionOperator = $conditionArray[$i]->operator;
-                        }else{
-                            $conditionOperator = '=';
-                        }
-                        $db_and->condition($conditionField, $conditionValue,$conditionOperator);
-                        $query = $query->condition($db_and);
-                    }
-                }
-            }
-            if (!empty($AddExpression)){
-                if (is_array($AddExpression)){
-                    for ($i = 0;$i < count($AddExpression);$i++){
-                        $query->addExpression($AddExpression[$i]->clause, $AddExpression[$i]->field_alias);
-                    }
-                }
-            }
-            if (!empty($whereClause)){
-                if (is_array($whereClause)){
-                    for ($i = 0;$i < count($whereClause);$i++){
-                        $query = $query->where($whereClause[$i]->clause, $whereClause[$i]->value);
-                    }
-                }
-            }
-            if (is_array($range) && !is_null($range)){
-                $query = $query->range($range['min'], $range['max']);
-            }
-            //dpm((string) $query);
-            $query = $query->execute()
-                           ->fetchAll();
+function getTableDataByField($tableName = null, $userAccess = null, $fieldArray = null, $fieldOrder = null, $fieldCondition = null, $fieldConditionValue = null, $leftJoinArray = null, $conditionArray = null, $range = null, $whereClause = null, $AddExpression = null, $group_by = null)
+{
+  $query = null;
+  if (!is_null($tableName) && !is_null($fieldArray) && !is_null($userAccess)) {
+    if (user_access($userAccess)) {
+      $strField = implode(',', $fieldArray);
+      $query = db_select($tableName, 'ta');
+      if ($leftJoinArray !== null && count($leftJoinArray)) {
+        for ($i = 0; $i < count($leftJoinArray); $i++) {
+          $leftJoinData = $leftJoinArray[$i];
+          if (isset($leftJoinData['sourcealias'])) {
+            $query->leftJoin($leftJoinData['tablename'], $leftJoinData['tablealias'], $leftJoinData['sourcealias'] . '.' . $leftJoinData['field_join'] . ' = ' . $leftJoinData['tablealias'] . '.' . $leftJoinData['field_source']);
+          } else {
+            $query->leftJoin($leftJoinData['tablename'], $leftJoinData['tablealias'], 'ta.' . $leftJoinData['field_join'] . ' = ' . $leftJoinData['tablealias'] . '.' . $leftJoinData['field_source']);
+          }
         }
+      }
+      $query = $query->fields('ta', $fieldArray);
+      if (!is_null($leftJoinArray) && count($leftJoinArray)) {
+        for ($i = 0; $i < count($leftJoinArray); $i++) {
+          $leftJoinData = $leftJoinArray[$i];
+          $query = $query->fields($leftJoinData['tablealias'], $leftJoinData['fieldArray']);
+        }
+      }
+      if (!is_null($fieldOrder)) {
+        if (!is_array($fieldOrder)) {
+          $explodeFieldOrder = explode('.', $fieldOrder);
+          if (count($explodeFieldOrder)) {
+            $query = $query->orderBy($fieldOrder);
+          } else {
+            $query = $query->orderBy('ta.' . $fieldOrder);
+          }
+        } else {
+          for ($i = 0; $i < count($fieldOrder); $i++) {
+            if (isset($fieldOrder[$i]['operator'])) {
+              $explodeFieldOrder = explode('.', $fieldOrder[$i]['fieldname']);
+              if (count($explodeFieldOrder)) {
+                $query = $query->orderBy($fieldOrder[$i]['fieldname'], $fieldOrder[$i]['operator']);
+              } else {
+                $query = $query->orderBy('ta.' . $fieldOrder[$i]['fieldname'], $fieldOrder[$i]['operator']);
+              }
+            } else {
+              $explodeFieldOrder = explode('.', $fieldOrder[$i]['fieldname']);
+              if (count($explodeFieldOrder)) {
+                $query = $query->orderBy($fieldOrder[$i]['fieldname']);
+              } else {
+                $query = $query->orderBy('ta.' . $fieldOrder[$i]['fieldname']);
+              }
+            }
+          }
+        }
+      }
+      if (!is_null($fieldCondition) && !is_null($fieldConditionValue)) {
+        $query = $query->condition('ta.' . $fieldCondition, $fieldConditionValue);
+      }
+      if (!is_null($conditionArray) && count($conditionArray)) {
+        $db_or = db_or();
+        $db_and = db_and();
+        for ($i = 0; $i < count($conditionArray); $i++) {
+          if (isset($conditionArray[$i]->connector)) {
+            if ($conditionArray[$i]->connector == 'OR') {
+              $conditionField = $conditionArray[$i]->fieldName;
+              $conditionValue = $conditionArray[$i]->value;
+              if (isset($conditionArray[$i]->operator) && !empty($conditionArray[$i]->operator)) {
+                $conditionOperator = $conditionArray[$i]->operator;
+              } else {
+                $conditionOperator = '=';
+              }
+              $db_or->condition($conditionField, $conditionValue, $conditionOperator);
+              $query = $query->condition($db_or);
+            } else {
+              $conditionField = $conditionArray[$i]->fieldName;
+              $conditionValue = $conditionArray[$i]->value;
+              if (isset($conditionArray[$i]->operator) && !empty($conditionArray[$i]->operator)) {
+                $conditionOperator = $conditionArray[$i]->operator;
+              } else {
+                $conditionOperator = '=';
+              }
+              $db_and->condition($conditionField, $conditionValue, $conditionOperator);
+              $query = $query->condition($db_and);
+            }
+          } else {
+            $conditionField = $conditionArray[$i]->fieldName;
+            $conditionValue = $conditionArray[$i]->value;
+            if (isset($conditionArray[$i]->operator) && !empty($conditionArray[$i]->operator)) {
+              $conditionOperator = $conditionArray[$i]->operator;
+            } else {
+              $conditionOperator = '=';
+            }
+            $db_and->condition($conditionField, $conditionValue, $conditionOperator);
+            $query = $query->condition($db_and);
+          }
+        }
+      }
+      if (!empty($AddExpression)) {
+        if (is_array($AddExpression)) {
+          for ($i = 0; $i < count($AddExpression); $i++) {
+            $query->addExpression($AddExpression[$i]->clause, $AddExpression[$i]->field_alias);
+          }
+        }
+      }
+      if (!empty($whereClause)) {
+        if (is_array($whereClause)) {
+          for ($i = 0; $i < count($whereClause); $i++) {
+            $query = $query->where($whereClause[$i]->clause, $whereClause[$i]->value);
+          }
+        }
+      }
+      if (is_array($group_by) && !is_null($group_by)) {
+        for ($i = 0; $i < count($group_by); $i++) {
+          $query = $query->groupBy($group_by[$i]);
+        }
+      }
+      if (is_array($range) && !is_null($range)) {
+        $query = $query->range($range['min'], $range['max']);
+      }
+      //dpm($query);
+      $query = $query->execute()
+        ->fetchAll();
     }
-    return $query;
+  }
+  return $query;
 }
 
 /**
@@ -366,7 +372,7 @@ function get_last_day($mon, $year) {
  * @param null $kodeZone
  * @return null
  */
-function getZoneByCode($kodeZone = null, $OrderBy = 'weight', $field_name = 'id', $alias_table = 'ta', $term = null)
+function getZoneByCode($kodeZone = null, $OrderBy = 'zd.weight', $field_name = 'id', $alias_table = 'ta', $term = null)
 {
   $dataReturn = null;
   db_set_active('master');
@@ -378,6 +384,15 @@ function getZoneByCode($kodeZone = null, $OrderBy = 'weight', $field_name = 'id'
     'telegram', 'email', 'website', 'created', 'changed',
     'uid', 'uid_changed', 'zone_status', 'weight',
   );
+  if (!is_array($OrderBy)){
+    $OrderData = [];
+    $OrderInfo = [];
+    $OrderInfo['fieldname'] = $OrderBy;
+    $OrderInfo['operator'] = 'asc';
+    $OrderData[] = $OrderInfo;
+  }else{
+    $OrderData = $OrderBy;
+  }
   $leftJoinArray = array(
     array(
       'tablename' => 'zons_detail',
@@ -406,7 +421,7 @@ function getZoneByCode($kodeZone = null, $OrderBy = 'weight', $field_name = 'id'
       }
       $dataZone = getTableDataByField(
         'zons', 'access ikhwan data zone', $fieldArray,
-        null, $field_name, $kodeZone, $leftJoinArray, $conditionArray
+        $OrderData, $field_name, $kodeZone, $leftJoinArray, $conditionArray
       );
       if (count($dataZone)) {
         $dataReturn = $dataZone[0];
@@ -427,7 +442,7 @@ function getZoneByCode($kodeZone = null, $OrderBy = 'weight', $field_name = 'id'
       }
       $dataZone = getTableDataByField(
         'zons', 'access ikhwan data zone', $fieldArray,
-        $OrderBy, null, null, $leftJoinArray, $conditionArray
+        $OrderData, null, null, $leftJoinArray, $conditionArray
       );
     }
   } else {
@@ -439,7 +454,7 @@ function getZoneByCode($kodeZone = null, $OrderBy = 'weight', $field_name = 'id'
       $conditionArray[] = $searchData;
     }
     $dataZone = getTableDataByField('zons', 'access ikhwan data zone',
-      $fieldArray, $OrderBy, null, null, $leftJoinArray, $conditionArray
+      $fieldArray, $OrderData, null, null, $leftJoinArray, $conditionArray
     );
   }
   if (count($dataZone)) {
@@ -634,7 +649,7 @@ function get_data_kawasan_ajax()
     $id_zon = $_GET['id_zon'];
   }
   if (!$ChosenInput) {
-    $array_kawasan = get_data_kawasan($id_zon, null, false, $kawasan);
+    $array_kawasan = get_data_kawasan_zon($id_zon, null, false, $kawasan);
     $maxView = count($array_kawasan);
     for ($i = 0; $i < $maxView; $i++) {
       $items[] = array(
@@ -648,7 +663,7 @@ function get_data_kawasan_ajax()
     exit();
   } else {
     $ChosenData = array();
-    $array_kawasan = get_data_kawasan($id_zon, null, null, $kawasan);
+    $array_kawasan = get_data_kawasan_zon($id_zon, null, null, $kawasan);
     $new_array_kawasan = [];
     if (!is_array($array_kawasan)){
       $new_array_kawasan[] = $array_kawasan;
@@ -699,276 +714,208 @@ function get_data_kategori_projek($id_kategori = null, $option = false){
 /**
  * @return string
  */
-function listZone($month = null, $year = null){
-    if (!empty($month) && !empty($year)){
-    }else{
-        $month = date('n');
-        $year = date('Y');
-    }
-    $intDate = mktime(7,0,0,$month,1,$year);
-    $dataPendapatan = array();
-    if (function_exists('get_total_pemasukan_pengeluaran_zon')){
-        $dataPendapatan = get_total_pemasukan_pengeluaran_zon($month, $year);
-    }
-    $module_path = drupal_get_path('module','ikhwan_core');
-    $csspath = $module_path.'/css/custom-style.css';
-    drupal_add_css($csspath);
-    $jspath = $module_path.'/js/list_zone.js';
-    drupal_add_js($jspath,array('scope' => 'footer', 'weight' => 5));
-    // Table settings.
-    $attributes['datatable_options'] = array(
-        'bFilter'   => TRUE,
-        'bInfo'     => TRUE,
-        'bPaginate' => FALSE,
-    );
-    // Define table columns
-    $header = array(
-        array(
-            'data' => t('Kode'),
-            'datatable_options' => array(
-                'bSortable' => TRUE,
-                'bSearchable' => TRUE,
-            ),
-        ),
-        array(
-            'data' => t('Nama'),
-            'datatable_options' => array(
-                'bSortable' => TRUE,
-                'bSearchable' => TRUE,
-            ),
-        ),
-        /*array(
-            'data' => t('Alamat'),
-            'datatable_options' => array(
-                'bSortable' => TRUE,
-                'bSearchable' => TRUE,
-            ),
-        ),*/
-        array(
-            'data' => t('Telephone'),
-            'datatable_options' => array(
-                'bSortable' => TRUE,
-                'bSearchable' => TRUE,
-            ),
-        ),
-        array(
-            'data' => t('Whatsapp'),
-            'datatable_options' => array(
-                'bSortable' => TRUE,
-                'bSearchable' => TRUE,
-            ),
-        ),
-        array(
-            'data' => t('Pendapatan').' ['.date('M',$intDate).']',
-            'datatable_options' => array(
-                'bSortable' => TRUE,
-                'bSearchable' => TRUE,
-            ),
-            'class' => 'col-input-number align-center',
-        ),
-        array(
-            'data' => t('Pengeluaran').' ['.date('M',$intDate).']',
-            'datatable_options' => array(
-                'bSortable' => TRUE,
-                'bSearchable' => TRUE,
-            ),
-            'class' => 'col-input-number align-center',
-        ),
-        array(
-            'data' => t('Baki').' ['.date('M',$intDate).']',
-            'datatable_options' => array(
-                'bSortable' => TRUE,
-                'bSearchable' => TRUE,
-            ),
-            'class' => 'col-input-number align-center',
-        ),
-        array(
-            'data' => t('Edit'),
-            'datatable_options' => array(
-                'bSortable' => FALSE,
-                'bSearchable' => FALSE,
-            ),
-        ),
-        array(
-            'data' => t('Entry'),
-            'datatable_options' => array(
-                'bSortable' => FALSE,
-                'bSearchable' => FALSE,
-            ),
-        ),
-      array(
-        'data' => t('Delete'),
-        'datatable_options' => array(
-          'bSortable' => FALSE,
-          'bSearchable' => FALSE,
-        ),
+function listZone($month = null, $year = null)
+{
+  if (!empty($month) && !empty($year)) {
+  } else {
+    $month = date('n');
+    $year = date('Y');
+  }
+  $intDate = mktime(7, 0, 0, $month, 1, $year);
+  $dataPendapatan = array();
+  if (function_exists('get_total_pemasukan_pengeluaran_zon')) {
+    $dataPendapatan = get_total_pemasukan_pengeluaran_zon($month, $year);
+  }
+  $module_path = drupal_get_path('module', 'ikhwan_core');
+  $csspath = $module_path . '/css/custom-style.css';
+  drupal_add_css($csspath);
+  $jspath = $module_path . '/js/list_zone.js';
+  drupal_add_js($jspath, array('scope' => 'footer', 'weight' => 5));
+  // Table settings.
+  $attributes['datatable_options'] = array(
+    'bFilter' => TRUE,
+    'bInfo' => TRUE,
+    'bPaginate' => FALSE,
+    'bProcessing' => TRUE,
+    'bServerSide' => TRUE,
+    'sAjaxSource' => base_path() . 'masterdata/zon/jsonp',
+  );
+  // Define table columns
+  $header = array(
+    array(
+      'data' => t('Kode'),
+      'datatable_options' => array(
+        'bSortable' => TRUE,
+        'bSearchable' => TRUE,
       ),
-    );
-    // Table data.
-    $dataZone = getZoneByCode();
-    $rows = array();
-    $totalPendapatan = 0;
-    $totalPengeluaran = 0;
-    $totalBaki = 0;
-    for ($i = 0;$i < count($dataZone);$i++) {
-      $zoneData = array();
-      $zoneData[] = $dataZone[$i]->weight;
-      $zoneData[] = $dataZone[$i]->nama;
-      //$zoneData[] = $dataZone[$i]->alamat;
-      $zoneData[] = $dataZone[$i]->telepon;
-      $zoneData[] = $dataZone[$i]->whatsapp;
-      if (isset($dataPendapatan[$dataZone[$i]->zone])) {
-        $pendapatanZone = $dataPendapatan[$dataZone[$i]->zone]->total_pemasukan;
-        $pendapatanZoneView = number_format(
-          $dataPendapatan[$dataZone[$i]->zone]->total_pemasukan, 2, '.', ','
-        );
-        $pengeluaranZone = $dataPendapatan[$dataZone[$i]->zone]->total_pengeluaran;
-        $pengeluaranZoneView = number_format(
-          $pengeluaranZone, 2, '.', ','
-        );
-        $bakiZone = $dataPendapatan[$dataZone[$i]->zone]->total_baki;
-        $bakiZoneView = number_format(
-          $bakiZone, 2, '.', ','
-        );
-      } else {
-        $pendapatanZone = 0;
-        $pendapatanZoneView = 0;
-        $pengeluaranZone = 0;
-        $pengeluaranZoneView = 0;
-        $bakiZone = 0;
-        $bakiZoneView = 0;
-      }
-      $totalPendapatan = $totalPendapatan + $pendapatanZone;
-      $totalPengeluaran = $totalPengeluaran + $pengeluaranZone;
-      $totalBaki = $totalBaki + $bakiZone;
-      $zoneData[] = array('data' => $pendapatanZoneView, 'class' => 'align-right');
-      $zoneData[] = array('data' => $pengeluaranZoneView, 'class' => 'align-right');
-      $zoneData[] = array('data' => $bakiZoneView, 'class' => 'align-right');
-      $editIcon = '<i class="fa fa-edit"></i>';
-      $editButtonVar = array(
-        'element' => array(
-          '#attributes' => array(
-            'class' => array('btn-success', 'btn-xs', 'no-margin', 'edit-zone'),
-            'id' => 'edit-zone-' . $dataZone[$i]->id,
-            'name' => 'edit-zone-' . $dataZone[$i]->id,
-          ),
-          '#button_type' => 'button',
-          '#value' => $editIcon . ' EDIT',
-        )
-      );
-      $editButton = theme('button', $editButtonVar);
-      $zoneData[] = $editButton;
-      $addIcon = '<i class="fa fa-plus"></i>';
-      $addButtonVar = array(
-        'element' => array(
-          '#attributes' => array(
-            'class' => array('btn-primary', 'btn-xs', 'no-margin', 'add-pendapatan'),
-            'id' => 'add-pendapatan-' . $dataZone[$i]->id,
-            'name' => 'add-pendapatan-' . $dataZone[$i]->id,
-            'onclick' => 'entry_pemasukan(\'' . $dataZone[$i]->id . '\', ' . $month . ',' . $year . ')',
-          ),
-          '#button_type' => 'button',
-          '#value' => $editIcon . ' ENTRY KEWANGAN',
-        )
-      );
-      $addButton = theme('button', $addButtonVar);
-      $zoneData[] = $addButton;
-      $DeleteIcon = '<i class="fa fa-trash"></i>';
-      $DeleteButtonVar = array(
-        'element' => array(
-          '#attributes' => array(
-            'class' => array('btn-danger', 'btn-xs', 'no-margin', 'delete-zone'),
-            'id' => 'delete-zone-' . $dataZone[$i]->id,
-            'name' => 'delete-zone-' . $dataZone[$i]->id,
-          ),
-          '#button_type' => 'button',
-          '#value' => $DeleteIcon . ' DELETE',
-        )
-      );
-      $DeleteButton = theme('button', $DeleteButtonVar);
-      $zoneData[] = $DeleteButton;
-      $rows[] = $zoneData;
-    }
-    // Or, render using a theme function.
-    $footer[] = array(
-        array(
-            'data' => '<strong>'.t('TOTAL').'</strong>',
-            'colspan' => 4,
-            'class' => 'align-right',
+    ),
+    array(
+      'data' => t('Nama'),
+      'datatable_options' => array(
+        'bSortable' => TRUE,
+        'bSearchable' => TRUE,
+      ),
+    ),
+    /*array(
+        'data' => t('Alamat'),
+        'datatable_options' => array(
+            'bSortable' => TRUE,
+            'bSearchable' => TRUE,
         ),
-        array(
-            'data' => '<strong>'.number_format($totalPendapatan,2,'.',',').'</strong>',
-            'class' => 'col-input-number align-right',
-        ),
-        array(
-            'data' => '<strong>'.number_format($totalPengeluaran,2,'.',',').'</strong>',
-            'class' => 'col-input-number align-right',
-        ),
-        array(
-            'data' => '<strong>'.number_format($totalBaki,2,'.',',').'</strong>',
-            'class' => 'col-input-number align-right',
-        ),
-        array(
-            'data' => '&nbsp;',
-            'colspan' => 2,
-        ),
-    );
-    $variables = array(
-        'attributes' => $attributes,
-        'header' => $header,
-        'rows' => $rows,
-        'footer' => $footer,
-    );
-    $newZoneButtonVar = array(
-        'element' => array(
-            '#attributes' => array(
-                'class' => array('btn-info btn-sm'),
-                'id' => 'new-zone',
-                'name' => 'new-zone',
-            ),
-            '#button_type' => 'button',
-            '#value' => t('Tambah Data Zone'),
-        )
-    );
-    $newZoneButton = theme('button', $newZoneButtonVar);
-    $variables['content'] = t('Pilih Bulan dan Tahun Pendapatan dan Pengeluaran, kemudian klik tombol show untuk melihat Pendapatan dan Pengeluaran');
-    $variables['month'] = $month;
-    $variables['year'] = $year;
-    $form = drupal_get_form('filter_periode_form',$variables);
-    $formPendapatan = drupal_render($form);
-    $listZone = $newZoneButton.$formPendapatan.theme('datatable', $variables);
-    return $listZone;
+    ),*/
+    array(
+      'data' => t('Telephone'),
+      'datatable_options' => array(
+        'bSortable' => TRUE,
+        'bSearchable' => TRUE,
+      ),
+    ),
+    array(
+      'data' => t('Whatsapp'),
+      'datatable_options' => array(
+        'bSortable' => TRUE,
+        'bSearchable' => TRUE,
+      ),
+    ),
+    array(
+      'data' => t('Pendapatan') . ' [' . date('M', $intDate) . ']',
+      'datatable_options' => array(
+        'bSortable' => FALSE,
+        'bSearchable' => FALSE,
+      ),
+      'class' => 'col-input-number align-center',
+    ),
+    array(
+      'data' => t('Pengeluaran') . ' [' . date('M', $intDate) . ']',
+      'datatable_options' => array(
+        'bSortable' => FALSE,
+        'bSearchable' => FALSE,
+      ),
+      'class' => 'col-input-number align-center',
+    ),
+    array(
+      'data' => t('Baki') . ' [' . date('M', $intDate) . ']',
+      'datatable_options' => array(
+        'bSortable' => FALSE,
+        'bSearchable' => FALSE,
+      ),
+      'class' => 'col-input-number align-center',
+    ),
+    array(
+      'data' => t('Edit'),
+      'datatable_options' => array(
+        'bSortable' => FALSE,
+        'bSearchable' => FALSE,
+      ),
+    ),
+    array(
+      'data' => t('Entry'),
+      'datatable_options' => array(
+        'bSortable' => FALSE,
+        'bSearchable' => FALSE,
+      ),
+    ),
+    array(
+      'data' => t('Delete'),
+      'datatable_options' => array(
+        'bSortable' => FALSE,
+        'bSearchable' => FALSE,
+      ),
+    ),
+  );
+  // Table data.
+  $dataZone = getZoneByCode();
+  $rows = array();
+  $totalPendapatan = 0;
+  $totalPengeluaran = 0;
+  $totalBaki = 0;
+  $row_data = [];
+  for ($i = 0;$i < count($header);$i++){
+    $row_data[] = '';
+  }
+  $rows[] = $row_data;
+  // Or, render using a theme function.
+  $footer[] = array(
+    array(
+      'data' => '<strong>' . t('TOTAL') . '</strong>',
+      'colspan' => 4,
+      'class' => 'align-right',
+    ),
+    array(
+      'data' => '<strong>' . number_format($totalPendapatan, 2, '.', ',') . '</strong>',
+      'class' => 'col-input-number align-right',
+    ),
+    array(
+      'data' => '<strong>' . number_format($totalPengeluaran, 2, '.', ',') . '</strong>',
+      'class' => 'col-input-number align-right',
+    ),
+    array(
+      'data' => '<strong>' . number_format($totalBaki, 2, '.', ',') . '</strong>',
+      'class' => 'col-input-number align-right',
+    ),
+    array(
+      'data' => '&nbsp;',
+      'colspan' => 2,
+    ),
+  );
+  $variables = array(
+    'attributes' => $attributes,
+    'header' => $header,
+    'rows' => $rows,
+    'footer' => $footer,
+  );
+  $newZoneButtonVar = array(
+    'element' => array(
+      '#attributes' => array(
+        'class' => array('btn-info btn-sm'),
+        'id' => 'new-zone',
+        'name' => 'new-zone',
+      ),
+      '#button_type' => 'button',
+      '#value' => t('Tambah Data Zone'),
+    )
+  );
+  $newZoneButton = theme('button', $newZoneButtonVar);
+  $variables['content'] = t('Pilih Bulan dan Tahun Pendapatan dan Pengeluaran, kemudian klik tombol show untuk melihat Pendapatan dan Pengeluaran');
+  $variables['month'] = $month;
+  $variables['year'] = $year;
+  $form = drupal_get_form('filter_periode_form', $variables);
+  $formPendapatan = drupal_render($form);
+  $listZone = $newZoneButton . $formPendapatan . theme('datatable', $variables);
+  return $listZone;
 }
 
 /**
  * @param null $kodeZone
  * @return string
  */
-function formZone($kodeZone = null){
-    $module_path = drupal_get_path('module','ikhwan_core');
-    $csspath = $module_path.'/css/custom-style.css';
-    drupal_add_css($csspath);
-    $getDataZone = null;
-    if (!empty($kodeZone)){
-        $getDataZone = getZoneByCode($kodeZone,'weight','id');
-    }
-    if (empty($getDataZone)){
-        $getDataZone = new stdClass();
-        $getDataZone->zone = '';
-        $getDataZone->nama = '';
-        $getDataZone->alamat = '';
-        $getDataZone->telepon = '';
-        $getDataZone->whatsapp = '';
-        $getDataZone->bbm = '';
-        $getDataZone->telegram = '';
-        $getDataZone->email = '';
-        $getDataZone->website = '';
-        $getDataZone->weight = 0;
-    }
+function formZone($kodeZone = null)
+{
+  $module_path = drupal_get_path('module', 'ikhwan_core');
+  $csspath = $module_path . '/css/custom-style.css';
+  drupal_add_css($csspath);
+  $getDataZone = null;
+  if (!empty($kodeZone)) {
+    $getDataZone = getZoneByCode($kodeZone, 'weight', 'id');
+    $variables = $getDataZone[0];
+  }
+  if (empty($getDataZone)) {
+    $getDataZone = new stdClass();
+    $getDataZone->zone = '';
+    $getDataZone->nama = '';
+    $getDataZone->alamat = '';
+    $getDataZone->telepon = '';
+    $getDataZone->whatsapp = '';
+    $getDataZone->bbm = '';
+    $getDataZone->telegram = '';
+    $getDataZone->email = '';
+    $getDataZone->website = '';
+    $getDataZone->weight = 0;
     $variables = $getDataZone;
-    $form = drupal_get_form('formZone_form',$variables);
-    $formZone = drupal_render($form);
-    return $formZone;
+  }
+  $form = drupal_get_form('formZone_form', $variables);
+  $formZone = drupal_render($form);
+  return $formZone;
 }
 
 /**
@@ -2854,7 +2801,7 @@ function ikhwan_chart_dashboard_21012020($month = null, $year = null, $zone = nu
     return '<div>'.$chartMenu.'</div>'.$yearBeforeButton.$monthBeforeButton.$currMonthButton.$dashBoard;
 }
 function ikhwan_chart_dashboard($month = null, $year = null, $zone = null){
-  drupal_set_title('ASSIGNMENT DASHBOARD');
+  drupal_set_title('GISBH STAFF MANAGEMENT');
   if (empty($month) && empty($year)) {
     if (date('j') <= 25) {
       $month = date('n', mktime(0, 0, 0, date('n') - 1, 1, date('Y')));
@@ -2883,6 +2830,23 @@ function ikhwan_chart_dashboard($month = null, $year = null, $zone = null){
     }
   }
   $UpdateTime = date('d-m-Y H:i:s', $LastUpdate);
+  $dataStaff = get_data_staff();
+  $total_staff = !empty($dataStaff) ? count($dataStaff) : 0;
+  $whereClause = [];
+  $whereData = new stdClass();
+  $whereData->clause = 'jantina = :arg3';
+  $whereData->value = array(':arg3' => 0);
+  $whereClause[] = $whereData;
+  $dataStaff = get_data_staff(null,false,null, $whereClause);
+  $total_lelaki = !empty($dataStaff) ? count($dataStaff) : 0;
+  $whereClause = [];
+  $whereData = new stdClass();
+  $whereData->clause = 'jantina = :arg3';
+  $whereData->value = array(':arg3' => 1);
+  $whereClause[] = $whereData;
+  $dataStaff = get_data_staff(null,false,null, $whereClause);
+  $total_wanita = !empty($dataStaff) ? count($dataStaff) : 0;
+  $total_keluarga = get_total_keluarga();
   $DashboardPanel = '<div class="col-lg-12">
                 <div class="hpanel">
                     <div class="panel-heading">
@@ -2890,16 +2854,115 @@ function ikhwan_chart_dashboard($month = null, $year = null, $zone = null){
                             <a class="showhide"><i class="fa fa-chevron-up"></i></a>
                             <a class="closebox"><i class="fa fa-times"></i></a>
                         </div>
-                        ASSIGNMENT INFORMATION
+                        STAFF DATA SUMMARY
                     </div>
                     <div class="panel-body">
                         <div class="row">
-
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card"><!----><!---->
+                                    <div class="card-body">
+                                        <div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="icon-big text-center icon-warning">
+                                                        <i class="fa fa-users" aria-hidden="true"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <div class="numbers">
+                                                        <p>TOTAL WARGA</p>
+                                                        '.$total_staff.'
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <hr>
+                                                <div class="stats"><i class="ti-reload"></i> Updated now</div>
+                                            </div>
+                                        </div>
+                                    </div><!---->
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card"><!----><!---->
+                                    <div class="card-body">
+                                        <div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="icon-big text-center icon-info">
+                                                        <i class="fa fa-user" aria-hidden="true"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <div class="numbers">
+                                                        <p>WARGA LELAKI</p>
+                                                        '.$total_lelaki.'
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <hr>
+                                                <div class="stats"><i class="ti-reload"></i> Updated now</div>
+                                            </div>
+                                        </div>
+                                    </div><!---->
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card"><!----><!---->
+                                    <div class="card-body">
+                                        <div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="icon-big text-center icon-danger">
+                                                        <i class="fa fa-user-plus" aria-hidden="true"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <div class="numbers">
+                                                        <p>WARGA WANITA</p>
+                                                        '.$total_wanita.'
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <hr>
+                                                <div class="stats"><i class="ti-reload"></i> Updated now</div>
+                                            </div>
+                                        </div>
+                                    </div><!---->
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card"><!----><!---->
+                                    <div class="card-body">
+                                        <div>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="icon-big text-center icon-success">
+                                                        <i class="fa fa-address-card" aria-hidden="true"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <div class="numbers">
+                                                        <p>KELUARGA</p>
+                                                        '.$total_keluarga.'
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <hr>
+                                                <div class="stats"><i class="ti-reload"></i> Updated now</div>
+                                            </div>
+                                        </div>
+                                    </div><!---->
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                        </div>
                     <div class="panel-footer">
                     <span class="pull-right">
-                          You have two new messages from <a href="">Monica Bolt</a>
+                          STAFF DATA SUMMARY EXAMPLE
                     </span>
                         Last update: '.$UpdateTime.', Zone : '.$LatestUpdate[0]->nama.'
                     </div>

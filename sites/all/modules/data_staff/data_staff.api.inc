@@ -1,32 +1,35 @@
 <?php
 
-function array_staff_level(){
-    return array(
-        'Ahli/Staff',
-        'Wakil Pengurus',
-        'Pengurus',
-        'Bod',
-        'Ibu',
-        'SUK-M 3',
-        'SUK-M 2',
-        'SUK-M 1',
-        'SUK 3',
-        'SUK 2',
-        'SUK 1',
-        'PZ',
-        'IZ',
-        'IZ1-2',
-        'PZ1-2',
-        'IZ1',
-        'PZ1',
-    );
+function array_staff_level()
+{
+  return array(
+    'Ahli/Staff',
+    'Wakil Pengurus',
+    'Pengurus',
+    'Bod',
+    'Ibu',
+    'PPSUZ 3',
+    'PPSUZ 2',
+    'PPSUZ 1',
+    'PSUZ',
+    'SUZ',
+    'KSUZ',
+    'TPZ',
+    'PMP',
+    'PZ',
+    'ALP',
+    'CEO',
+    'CCO',
+    'COO',
+    'CHAIRMAN',
+  );
 }
 
 function array_jenis_kelamin(){
     return array(t('Laki-laki'), t('Perempuan'));
 }
 
-function get_data_staff($id_zon = null, $option = false, $id_staff = null, $where_clause = null){
+function get_data_staff_100324($id_zon = null, $option = false, $id_staff = null, $where_clause = null){
   global $user;
   $data_return = null;
   db_set_active('master');
@@ -92,6 +95,230 @@ function get_data_staff($id_zon = null, $option = false, $id_staff = null, $wher
       $DataOption[$DataStaff->id_number] = $DataStaff->nama_lengkap;
     }
     $data_return = $DataOption;
+  }
+  db_set_active();
+  return $data_return;
+}
+
+function get_data_staff($id_zon = null, $option = false, $id_staff = null, $added_where = null, $order_by = 'ta.id_staff ASC', $range_data = null, $count_only = false, $search = null){
+  global $user;
+  $data_return = null;
+  db_set_active('master');
+  $where_clause = '';
+  $array_value = null;
+  if (!is_null($id_zon)){
+    $array_value = [];
+    $where_clause = 'AND ta.id_zon = :id_zon ';
+    $array_value[':id_zon'] = $id_zon;
+  }
+  if (!is_null($id_staff)){
+    if (is_null($array_value)){
+      $array_value = [];
+    }
+    $where_clause = 'AND ta.id_staff = :id_staff ';
+    $array_value[':id_staff'] = $id_staff;
+  }
+  if (!empty($added_where) && isset($added_where['str_sql']) && isset($added_where['placeholder'])){
+    $where_clause .= 'AND ('.$added_where['str_sql'].') ';
+    foreach ($added_where['placeholder'] as $idx => $placeholder){
+      $array_value[$placeholder->idx] = $placeholder->value;
+    }
+  }
+  if (!empty($search)){
+    $where_clause .= "AND (staff.nama_lengkap LIKE :term1 OR staff.nama_hijrah LIKE :term2
+    OR staff.no_ic LIKE :term3 OR staff.no_hp LIKE :term4 OR staff.alamat LIKE :term5
+    OR staff.nama_suami LIKE :term6 OR staff.nama_ayah LIKE :term7 OR staff.nama_ibu LIKE :term8)";
+    for ($i = 0;$i < 8;$i++){
+      $array_value[':term'.($i+1)] = '%'.db_like($search).'%';
+    }
+  }
+  $range_sql = '';
+  if (!empty($range_data) && isset($range_data['start']) && isset($range_data['length'])){
+    $range_sql = 'LIMIT '.$range_data['start'].','.$range_data['length'];
+  }
+  if (!empty($array_value)) {
+    $query = db_query(
+      "SELECT DISTINCT ta.id_staff, GROUP_CONCAT(CONCAT(ta.id_zon,'-', ta.id_jawatan) SEPARATOR ', ') AS zon_jawatan,
+    staff.id_number, staff.id_zon, staff.zon, staff.id_kawasan, staff.id_staff, staff.id_ayah, staff.id_ibu,
+    staff.nama_lengkap, staff.nama_hijrah, staff.jantina, staff.tempat_lahir, staff.tarikh_lahir,
+    staff.bangsa, staff.negara, staff.no_ic, staff.no_kk, staff.alamat, staff.no_hp, staff.email, staff.id_suami,
+    staff.nama_suami, staff.nama_ayah, staff.nama_ibu, staff.created, staff.changed, staff.uid, staff.uid_changed,
+    staff.nama_sekolah, GROUP_CONCAT(CONCAT(zons.zon_name,'-',ta.id_jawatan) ORDER BY zons.id SEPARATOR ', ') AS zon_name,
+    kawasan.id_kawasan, kawasan.kawasan, staff_level FROM master_data_zon_staff ta LEFT JOIN master_data_staff staff
+    ON staff.id_number = ta.id_staff
+    LEFT JOIN zons zons ON ta.id_zon = zons.id LEFT JOIN master_data_kawasan kawasan ON staff.id_kawasan = kawasan.id_kawasan
+    WHERE 1=1 ".$where_clause." GROUP BY ta.id_staff ORDER BY ".$order_by." ".$range_sql, $array_value
+    );
+  }else{
+    $query = db_query(
+      "SELECT DISTINCT ta.id_staff, GROUP_CONCAT(CONCAT(ta.id_zon,'-', ta.id_jawatan) SEPARATOR ', ') AS zon_jawatan,
+    staff.id_number, staff.id_zon, staff.zon, staff.id_kawasan, staff.id_staff, staff.id_ayah, staff.id_ibu,
+    staff.nama_lengkap, staff.nama_hijrah, staff.jantina, staff.tempat_lahir, staff.tarikh_lahir,
+    staff.bangsa, staff.negara, staff.no_ic, staff.no_kk, staff.alamat, staff.no_hp, staff.email, staff.id_suami,
+    staff.nama_suami, staff.nama_ayah, staff.nama_ibu, staff.created, staff.changed, staff.uid, staff.uid_changed,
+    staff.nama_sekolah, GROUP_CONCAT(CONCAT(zons.zon_name,'-',ta.id_jawatan) ORDER BY zons.id SEPARATOR ', ') AS zon_name, kawasan.id_kawasan,
+    kawasan.kawasan, staff_level FROM master_data_zon_staff ta LEFT JOIN master_data_staff staff ON staff.id_number = ta.id_staff
+    LEFT JOIN zons zons ON ta.id_zon = zons.id LEFT JOIN master_data_kawasan kawasan ON staff.id_kawasan = kawasan.id_kawasan
+    GROUP BY ta.id_staff ORDER BY ".$order_by." ".$range_sql
+    );
+  }
+  $data_return = $query->fetchAll();
+  if ($count_only){
+
+  }else {
+    if (!empty($data_return)) {
+      $anakIcon = '<i class="fa fa-user"></i>';
+      $zonIcon = '<i class="fa fa-map"></i>';
+      $array_jawatan_premis = array_jabatan_premis();
+      $staff_jawatan = array_staff_level();
+      for ($i = 0; $i < count($data_return); $i++) {
+        if (!empty($data_return[$i]->id_ayah)) {
+          $dataAyah = db_query("SELECT nama_lengkap, nama_hijrah FROM master_data_staff WHERE id_number = '" . $data_return[$i]->id_ayah . "'")->fetchAll();
+          $namaAyah = !empty($dataAyah[0]->nama_lengkap) ? $dataAyah[0]->nama_lengkap : $dataAyah[0]->nama_hijrah;
+        } else {
+          if (!empty($data_return[$i]->nama_ayah)) {
+            $namaAyah = $data_return[$i]->nama_ayah;
+          } else {
+            $namaAyah = '-';
+          }
+        }
+        $data_return[$i]->ayah = $namaAyah;
+        if (!empty($data_return[$i]->id_ibu)) {
+          $dataIbu = db_query("SELECT nama_lengkap, nama_hijrah FROM master_data_staff WHERE id_number = '" . $data_return[$i]->id_ibu . "'")->fetchAll();
+          $namaIbu = !empty($dataIbu[0]->nama_lengkap) ? $dataIbu[0]->nama_lengkap : $dataIbu[0]->nama_hijrah;
+        } else {
+          if (!empty($data_return[$i]->nama_ibu)) {
+            $namaIbu = $data_return[$i]->nama_ibu;
+          } else {
+            $namaIbu = '-';
+          }
+        }
+        $data_return[$i]->ibu = $namaIbu;
+        $related_premis = db_query(
+          "SELECT mdsp.id_jawatan, premis.nama FROM master_data_staff_premis mdsp LEFT JOIN master_data_staff staff ON mdsp.id_staff = staff.id_number
+              LEFT JOIN master_data_premis premis ON mdsp.id_premis = premis.id WHERE mdsp.id_staff = '" . $data_return[$i]->id_number . "'"
+        )->fetchAll();
+        $DataPremis = '-';
+        if (!empty($related_premis)) {
+          if (count($related_premis)) {
+            $DataPremis = '<ul>';
+            foreach ($related_premis as $premis) {
+              $DataPremis .= '<li>' . $array_jawatan_premis[$premis->id_jawatan] . ' ' . $premis->nama . '</li>';
+            }
+            $DataPremis .= '</ul>';
+          }
+        }
+        $data_return[$i]->premis = $DataPremis;
+        $DataAnak = '';
+        if ($data_return[$i]->jantina == 1) {
+          if (!empty($data_return[$i]->id_suami)) {
+            $record_suami = db_query("SELECT nama_lengkap FROM master_data_staff WHERE id_number =" . $data_return[$i]->id_suami)->fetchAll();
+            $record_suami = $record_suami[0]->nama_lengkap;
+          } else {
+            if (!empty($data_return[$i]->nama_suami)) {
+              $record_suami = $data_return[$i]->nama_suami;
+            } else {
+              $record_suami = '';
+            }
+          }
+          if (!empty($data_return[$i]->id_suami) || !empty($data_return[$i]->nama_suami)) {
+            $tombol_add_anak = '<button id="add-anak-' . $data_return[$i]->id_number . '" class="btn-info btn-xs no-margin btn-block add-anak" onclick="add_anak(\'' . $data_return[$i]->id_number . '\')">' . $anakIcon . ' ADD ANAK</button>';
+            $tombol_show_anak = '<button id="show-anak-' . $data_return[$i]->id_number . '" class="btn-success btn-xs no-margin show-anak btn-block">' . $anakIcon . ' SHOW ANAK</button>';
+            $ListAnak = db_query("SELECT nama_lengkap, nama_hijrah FROM master_data_staff WHERE id_ibu = '" . $data_return[$i]->id_number . "'")->fetchAll();
+            $DataAnak = '';
+            if (!empty($ListAnak)) {
+              if (count($ListAnak)) {
+                $DataAnak = '<ol id="list-anak-' . $data_return[$i]->id_number . '" class="padding-left-15 margin-bottom-5 list-anak">';
+                foreach ($ListAnak as $idx_anak => $anak) {
+                  $NamaAnak = !empty($anak->nama_lengkap) ? $anak->nama_lengkap : $anak->nama_hijrah;
+                  $DataAnak .= '<li>' . $NamaAnak . '</li>';
+                }
+                $DataAnak .= '</ol>';
+              }
+            }
+            if ($DataAnak != '') {
+              $DataAnak = $DataAnak . '<div style="font-size: 3px;">&nbsp;</div>' . $tombol_show_anak . '<div style="font-size: 3px;">&nbsp;</div>' . $tombol_add_anak;
+            } else {
+              $DataAnak = $DataAnak . '<div style="font-size: 3px;">&nbsp;</div>' . $tombol_add_anak;
+            }
+          }
+          $data_return[$i]->data_suami_istri = $record_suami;
+        } else if ($data_return[$i]->jantina == 0) {
+          $record_istri = db_query("SELECT id_number, nama_lengkap FROM master_data_staff WHERE id_suami = " . $data_return[$i]->id_number)->fetchAll();
+          $NamaIstri = '';
+          if (!empty($record_istri) && count($record_istri)) {
+            $NamaIstri = '<ul id="list-istri-' . $data_return[$i]->id_number . '" class="padding-left-15 margin-bottom-5 list-istri">';
+            $wrapper_anak = '<div id="list-anak-' . $data_return[$i]->id_number . '" class="list-anak">';
+            for ($j = 0; $j < count($record_istri); $j++) {
+              $Istri = $record_istri[$j]->nama_lengkap;
+              $NamaIstri .= '<li>' . $Istri . '</li>';
+              $ListAnak = db_query("SELECT nama_lengkap, nama_hijrah FROM master_data_staff WHERE id_ibu = '" . $record_istri[$j]->id_number . "'")->fetchAll();
+              if (!empty($ListAnak)) {
+                if (count($ListAnak)) {
+                  if ($DataAnak == '') {
+                    $DataAnak = '<h5>Ibu : ' . $Istri . '</h5><ol class="padding-left-15 margin-bottom-5">';
+                  } else {
+                    $DataAnak .= '<h5>Ibu : ' . $Istri . '</h5><ol class="padding-left-15 margin-bottom-5">';
+                  }
+                  foreach ($ListAnak as $idx_anak => $anak) {
+                    $NamaAnak = !empty($anak->nama_lengkap) ? $anak->nama_lengkap : $anak->nama_hijrah;
+                    $DataAnak .= '<li>' . $NamaAnak . '</li>';
+                  }
+                  $DataAnak .= '</ol>';
+                }
+              }
+            }
+            if ($DataAnak != '') {
+              $tombol_show_anak = '<button id="show-anak-' . $data_return[$i]->id_number . '" class="btn-success btn-xs no-margin show-anak btn-block">' . $anakIcon . ' SHOW ANAK</button>';
+              $DataAnak = $wrapper_anak . $DataAnak . '</div>' . $tombol_show_anak;
+            }
+            $NamaIstri .= '</ul>';
+          }
+          $tombol_show_istri = '<button id="show-istri-' . $data_return[$i]->id_number . '" class="btn-success btn-xs no-margin show-istri btn-block">' . $anakIcon . ' SHOW ISTRI</button>';
+          if (!empty($NamaIstri)){
+            $data_return[$i]->data_suami_istri = $NamaIstri.$tombol_show_istri. '<div style="font-size: 3px;">&nbsp;</div>';
+          }else{
+            $data_return[$i]->data_suami_istri = $NamaIstri;
+          }
+        }
+        $data_return[$i]->data_anak = $DataAnak;
+        $tombol_zon = '<button id="edit-zon-' . $data_return[$i]->id_number . '" class="btn-success btn-xs no-margin btn-block edit-zon" onclick="edit_zon(\'' . $data_return[$i]->id_number . '\')">' . $zonIcon . ' EDIT ZON</button>';
+        $tombol_hide_zon = '<button id="showhide-zon-' . $data_return[$i]->id_number . '" class="btn-info btn-xs no-margin btn-block list-zon-button">' . $zonIcon . ' SHOW ZON</button>';
+        $Zonlist = '';
+        if (!empty($data_return[$i]->zon_name)){
+          $SplitData = explode(',', $data_return[$i]->zon_name);
+          if (!empty($SplitData)){
+            $NewZonJawatan = [];
+            foreach ($SplitData as $idx => $ZonJawatan){
+              $SplitData2 = explode('-', $ZonJawatan);
+              if (isset($SplitData2[1])){
+                if (isset($staff_jawatan[$SplitData2[1]])) {
+                  $NewZonJawatan[] = $staff_jawatan[$SplitData2[1]] . ' Zon ' . $SplitData2[0];
+                }else{
+                  $NewZonJawatan[] = $SplitData2[0];
+                }
+              }else{
+                $NewZonJawatan[] = $SplitData2[0];
+              }
+            }
+            $Zonlist = '';
+            if (!empty($NewZonJawatan)){
+              $Zonlist = '<ul id="list-zon-'.$data_return[$i]->id_number.'" class="list-zon list-group">';
+              foreach ($NewZonJawatan as $idx => $ZonJawatanData){
+                $Zonlist .= '<li class="list-group-item">'.$ZonJawatanData.'</li>';
+              }
+              $Zonlist .= '</ul>';
+            }
+            $data_return[$i]->zon_name = $Zonlist;
+          }
+        }
+        if (!empty($Zonlist)) {
+          $data_return[$i]->zon_name .= $tombol_hide_zon . '<div style="font-size: 3px;">&nbsp;</div>' . $tombol_zon;
+        }else{
+          $data_return[$i]->zon_name .= $tombol_zon;
+        }
+      }
+    }
   }
   db_set_active();
   return $data_return;
@@ -163,18 +390,22 @@ function list_staff()
     , 'setting');
   //$jspath = 'sites/all/libraries/datatables/extras/ColVis/media/js/ColVis.js';
   //drupal_add_js($jspath, array('scope' => 'footer', 'weight' => 5));
+  add_chosen_jquery_plugins();
   $module_path = drupal_get_path('module', 'data_staff');
   $jspath = $module_path . '/js/list_staff.js';
   drupal_add_js($jspath, array('scope' => 'footer', 'weight' => 5));
-  add_chosen_jquery_plugins();
   // Table settings.
   $attributes['datatable_options'] = array(
     'bFilter' => TRUE,
     'bInfo' => TRUE,
     'bStateSave' => TRUE,
+    'sAjaxSource' => base_path() . 'masterdata/staff/jsonp',
+    'bProcessing' => TRUE,
+    'bServerSide' => TRUE,
     'sPaginationType' => 'full_numbers',
-    'iDisplayLength' => 100,
-    'aLengthMenu' => [[100, 250, 500, -1], [100, 250, 500, "All"]],
+    'iDisplayLength' => 50,
+    'aLengthMenu' => [[50, 100, 250, 500, -1], [50, 100, 250, 500, "All"]],
+
   );
   // Define table columns
   $header = array(
@@ -183,6 +414,7 @@ function list_staff()
       'datatable_options' => array(
         'bSortable' => TRUE,
         'bSearchable' => TRUE,
+        'bVisible' => FALSE,
       ),
     ),
     array(
@@ -197,6 +429,7 @@ function list_staff()
       'datatable_options' => array(
         'bSortable' => TRUE,
         'bSearchable' => TRUE,
+        'bVisible' => FALSE,
       ),
     ),
     array(
@@ -220,6 +453,7 @@ function list_staff()
       'datatable_options' => array(
         'bSortable' => TRUE,
         'bSearchable' => TRUE,
+        'bVisible' => FALSE,
       ),
     ),
     array(
@@ -236,6 +470,7 @@ function list_staff()
       'datatable_options' => array(
         'bSortable' => TRUE,
         'bSearchable' => TRUE,
+        'bVisible' => FALSE,
       ),
     ),
     array(
@@ -244,13 +479,15 @@ function list_staff()
       'datatable_options' => array(
         'bSortable' => TRUE,
         'bSearchable' => TRUE,
+        'bVisible' => FALSE,
       ),
     ),
     array(
       'data' => t('Tempat Lahir'),
       'datatable_options' => array(
-        'bSortable' => FALSE,
-        'bSearchable' => FALSE,
+        'bSortable' => TRUE,
+        'bSearchable' => TRUE,
+        'bVisible' => FALSE,
       ),
     ),
     array(
@@ -258,7 +495,7 @@ function list_staff()
       'class' => array('col-input-number-small align-center'),
       'datatable_options' => array(
         'bSortable' => TRUE,
-        'bSearchable' => TRUE,
+        'bSearchable' => FALSE,
       ),
     ),
     array(
@@ -269,17 +506,27 @@ function list_staff()
       ),
     ),
     array(
-      'data' => t('Anak'),
+      'data' => t('Data Anak'),
       'datatable_options' => array(
         'bSortable' => FALSE,
         'bSearchable' => FALSE,
       ),
+      'class' => 'col-input-number'
     ),
     array(
       'data' => t('Ayah'),
       'datatable_options' => array(
         'bSortable' => TRUE,
         'bSearchable' => TRUE,
+        'bVisible' => FALSE,
+      ),
+    ),
+    array(
+      'data' => t('Ibu'),
+      'datatable_options' => array(
+        'bSortable' => TRUE,
+        'bSearchable' => TRUE,
+        'bVisible' => FALSE,
       ),
     ),
     array(
@@ -287,6 +534,7 @@ function list_staff()
       'datatable_options' => array(
         'bSortable' => TRUE,
         'bSearchable' => TRUE,
+        'bVisible' => FALSE,
       ),
     ),
     array(
@@ -294,6 +542,7 @@ function list_staff()
       'datatable_options' => array(
         'bSortable' => TRUE,
         'bSearchable' => TRUE,
+        'bVisible' => FALSE,
       ),
     ),
     array(
@@ -304,10 +553,10 @@ function list_staff()
       ),
     ),
     array(
-      'data' => t('Level'),
+      'data' => t('Jawatan'),
       'datatable_options' => array(
-        'bSortable' => TRUE,
-        'bSearchable' => TRUE,
+        'bSortable' => FALSE,
+        'bSearchable' => FALSE,
       ),
     ),
   );
@@ -317,7 +566,7 @@ function list_staff()
     $userZone = get_user_zone();
   }
   $user_zon = null;
-  if ($userZone[0]) {
+  if (isset($userZone[0])) {
     $user_zon = $userZone[1]['zone'];
     //$dataPremis = $userZone[1]['id_premis'];
   } else {
@@ -360,7 +609,7 @@ function list_staff()
           $dataStaff[] = $ListStaff[$j];
       }
   }*/
-  if (!empty($user_zon)){
+  /*if (!empty($user_zon)){
     $dataStaff = get_data_staff($user_zon, false, null, $whereClause);
   }else {
     $dataStaff = get_data_staff(null, false, null, $whereClause);
@@ -368,9 +617,15 @@ function list_staff()
   $rows = array();
   $arrayJK = array_jenis_kelamin();
   $ArrayLevel = array_staff_level();
-  $array_jawatan_premis = array_jabatan_premis();
+  $array_jawatan_premis = array_jabatan_premis();*/
   /*count($dataStaff)*/
-  foreach ($dataStaff as $idStaff => $detailStaff) {
+  $rows = [];
+  $StaffData = [];
+  for ($i = 0;$i < count($header);$i++){
+    $StaffData[] = '';
+  }
+  $rows[] = $StaffData;
+  /*foreach ($dataStaff as $idStaff => $detailStaff) {
     $premisData = array();
     $premisData[] = array(
       'data' => $detailStaff->id_staff,
@@ -442,8 +697,8 @@ function list_staff()
     );
     if (!empty($detailStaff->id_suami)) {
       $dataSuami = get_data_staff(null, false, $detailStaff->id_suami);
-      if (count($dataSuami)) {
-        $namaSuami = $dataSuami->nama_lengkap;
+      if (!empty($dataSuami)) {
+        $namaSuami = $dataSuami[0]->nama_lengkap;
       } else {
         $namaSuami = '-';
       }
@@ -564,6 +819,7 @@ function list_staff()
       }
     }
     $premisData[] = $namaAyah;
+    $premisData[] = $detailStaff->nama_ibu;
     $related_premis = get_data_staff_premis(null,$detailStaff->id_number);
     $list_premis = '-';
     if (count($related_premis)) {
@@ -585,14 +841,14 @@ function list_staff()
       'class' => 'select-zon',
       'id' => 'id_zon-' . $detailStaff->id_number,
     );
-    $StaffLevel = isset($ArrayLevel[$detailStaff->staff_level]) ? $ArrayLevel[$detailStaff->staff_level] : '';
+    $StaffLevel = isset($ArrayLevel[$detailStaff->staff_level]) ? $ArrayLevel[$detailStaff->staff_level] : '-';
     $premisData[] = array(
       'data' => $StaffLevel,
       'class' => 'edit-level',
       'id' => 'staff_level-' . $detailStaff->id_number,
     );
     $rows[] = $premisData;
-  }
+  }*/
   $variables = array(
     'attributes' => $attributes,
     'header' => $header,
@@ -614,15 +870,22 @@ function list_staff()
   $form = drupal_get_form('filter_staff_form', $FormVar);
   $FilterForm = drupal_render($form);
   $listStaff = theme('datatable', $variables);
-  $button_group = '<div class="btn-group btn-group-sm" role="group" aria-label="Small button group">';
+  $button_group = '<div class="btn-group btn-group-sm" role="group" aria-label="Button group with nested dropdown">';
   $col_title = [
     'ID Staff','Nama Lengkap','Nama Hijrah','Jantina','No. KTP/IC','No. KK','No. HP','Alamat', 'Tgl. Lahir',
-    'Tempat Lahir','Umur','Suami/Istri','Anak','Ayah','Premis','Kawasan','Zon','Level'
+    'Tempat Lahir','Umur','Suami/Istri','Anak','Ayah','Ibu','Premis','Kawasan','Zon','Jawatan'
   ];
-  for ($i = 0;$i < 18;$i++){
-    $button_group .= '<button title="click to show or hide related column" id="column-'.$i.'" type="button" class="btn btn-secondary btn-show-hide">'.$col_title[$i].'</button>';
+  $button_group .= '<div class="btn-group btn-group-sm" role="group">';
+  $button_group .= '<button type="button" class="btn btn-default dropdown-toggle" ';
+  $button_group .= 'data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">';
+  $button_group .= 'Column Visibility<span class="caret"></span>';
+  $button_group .= '</button>';
+  $button_group .= '<ul class="dropdown-menu">';
+  for ($i = 0;$i < count($col_title);$i++){
+    //$button_group .= '<button title="click to show or hide related column" id="column-'.$i.'" type="button" class="btn btn-secondary btn-show-hide">'.$col_title[$i].'</button>';
+    $button_group .= '<li><a id="column-'.$i.'" title="click to show or hide related column" class="btn-show-hide" href="#">'.$col_title[$i].'</a></li>';
   }
-  $button_group .= '</div>';
+  $button_group .= '</ul></div></div>';
   return $FilterForm . $button_group . $listStaff;
 }
 
@@ -865,11 +1128,11 @@ function update_staff_data()
     $TableName = 'master_data_staff';
     $PrimaryId = 'id_number';
     $SavedData[$IdPost[0]] = $PostValue;
-    if ($IdPost[0] == 'id_kawasan'){
+    /*if ($IdPost[0] == 'id_kawasan'){
       $data_kawasan = get_data_kawasan(null, $PostValue);
       db_set_active('master');
-      $SavedData['id_zon'] = $data_kawasan->id_zon;
-    }
+      //$SavedData['id_zon'] = $data_kawasan->id_zon;
+    }*/
     saveTableData(
       $TableName, 'admin data staff',
       $SavedData, $PrimaryId, $IdPost[1]
@@ -885,9 +1148,20 @@ function update_staff_data()
       $PostValue = $LevelStaff[$PostValue];
     } else if ($IdPost[0] == 'id_zon') {
       $data_zon = getZoneByCode($PostValue);
-      $PostValue = $data_zon->zon_name;
+      $PostValue = $data_zon[0]->zon_name;
     } else if ($IdPost[0] == 'id_kawasan') {
+      $data_kawasan = get_data_kawasan(null, $PostValue);
       $PostValue = $data_kawasan->kawasan;
+    } else if ($IdPost[0] == 'id_ayah') {
+      $DataAyah = get_data_staff_only_by_id($PostValue);
+      if (!empty($DataAyah)) {
+        $PostValue = $DataAyah[0]->nama_lengkap;
+      }
+    } else if ($IdPost[0] == 'id_ibu') {
+      $DataIbu = get_data_staff_only_by_id($PostValue);
+      if (!empty($DataIbu)) {
+        $PostValue = $DataIbu[0]->nama_lengkap;
+      }
     }
     db_set_active();
     print $PostValue;
@@ -1063,7 +1337,7 @@ function filter_staff_form($form, &$form_state, $variables = null)
     $userZone = get_user_zone();
   }
   $filtered_zon = null;
-  if ($userZone[0]) {
+  if (isset($userZone[0])) {
     $filtered_zon = $userZone[1]['zone'];
     //$dataPremis = $userZone[1]['id_premis'];
   } else {
@@ -1697,4 +1971,25 @@ function get_data_staff_milad_by_date_ajax($month = null, $birth_date = null){
     }
     print get_data_staff_milad_by_date($month, $birth_date);
     exit();
+}
+
+function get_total_keluarga(){
+  db_set_active('master');
+  $strSQL = 'SELECT COUNT(DISTINCT id_suami) AS total  FROM master_data_staff WHERE id_suami IS NOT NULL';
+  $result = db_query($strSQL)->fetchCol();
+  db_set_active();
+  return $result[0];
+}
+
+function total_ahli_by_zon(){
+  $data_zon = getZoneByCode();
+  $jumlah_staff_zon = [];
+  foreach ($data_zon as $idx => $zon){
+    $data_staff_zon = get_data_staff($zon->id);
+    $data_total = new stdClass();
+    $data_total->total = !empty($data_staff_zon) ? count($data_staff_zon) : 0;
+    $data_total->nama_zon = $zon->zon_name;
+    $jumlah_staff_zon[$zon->id] = $data_total;
+  }
+  return $jumlah_staff_zon;
 }
